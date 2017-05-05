@@ -1,6 +1,6 @@
 {
     'server_address': 'apigw.open.rokid.com:443',
-    'ssl_roots_pem': '/system/etc/roots.pem',
+    'ssl_roots_pem': 'file:///android_asset/roots.pem',
     'api_version': '1',
     'key': 'your_auth_key',
     'device_type_id': 'your_device_type_id',

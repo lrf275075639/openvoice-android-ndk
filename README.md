@@ -1,1 +1,0 @@
-# rokid-openvoice-speech-app

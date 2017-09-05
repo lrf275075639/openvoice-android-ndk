@@ -5,15 +5,15 @@
 #include "audio_recorder.h"
 
 VoiceService::VoiceService() {
-    pthread_mutex_init(&event_mutex, NULL);
-    pthread_mutex_init(&speech_mutex, NULL);
-    pthread_mutex_init(&siren_mutex, NULL);
+	pthread_mutex_init(&event_mutex, NULL);
+	pthread_mutex_init(&speech_mutex, NULL);
+	pthread_mutex_init(&siren_mutex, NULL);
     pthread_mutex_init(&session_mutex, NULL);
-    pthread_cond_init(&event_cond, NULL);
-    
+	pthread_cond_init(&event_cond, NULL);
+
     _voice_config = make_shared<VoiceConfig>();
-    _callback = make_shared<VoiceCallback>();
-    _speech = new_speech();
+	_callback = make_shared<VoiceCallback>();
+	_speech = new_speech();
     clear();
 }
 

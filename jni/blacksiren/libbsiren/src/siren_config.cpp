@@ -56,7 +56,10 @@ template <typename T>
 std::string build_printable_indx(const std::vector<T> &from) {
     std::string result;
     for (T j : from) {
-        result.append(std::to_string(j)).append(" ");
+        char buf[128];
+        snprintf(buf, sizeof(buf), "%Lf", j);
+        result.append(buf).append(" ");
+        //result.append(std::to_string(j)).append(" ");
     }
     return result;
 }

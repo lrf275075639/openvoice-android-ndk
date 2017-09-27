@@ -115,8 +115,7 @@ int LFCounter::dec(struct timespec *timeout) {
 
 
 void LFCounter::wake() {
-    futex_wake(&this->val, 2147483647);
-//    futex_wake(&this->val, INT32_MAX);
+    futex_wake(&this->val, INT_MAX);
 }
 
 void LFCounter::wake_if_needed() {

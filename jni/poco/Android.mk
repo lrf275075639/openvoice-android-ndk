@@ -1,4 +1,4 @@
-#LOCAL_PATH := $(call my-dir)
+MY_LOCAL_PATH := $(call my-dir)
 
 PocoFoundationDir := poco/Foundation
 PocoNetDir := poco/Net

@@ -27,11 +27,6 @@ LOCAL_SRC_FILES := $(SDK_BLACKSIREN)/libr2vt.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := libcurl
-LOCAL_SRC_FILES := $(SDK_BLACKSIREN)/libcurl.so
-#include $(PREBUILT_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
 LOCAL_MODULE := libtinyalsa
 LOCAL_SRC_FILES := $(DEP_LIBRARIES)/libtinyalsa.so
 include $(PREBUILT_SHARED_LIBRARY)

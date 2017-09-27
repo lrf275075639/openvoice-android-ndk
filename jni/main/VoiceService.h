@@ -2,7 +2,7 @@
 #define VOICE_SERVICE_H
 
 #define EXTRA_ACCEPT "accept"
-#define EXTRA_REJECT "reject"
+#define EXTRA_NONE "none"
 
 #include <log.h>
 #include <pthread.h>
@@ -46,20 +46,16 @@ private:
 	};
 
     static inline int32_t transform_string_to_event(const std::string& extra){
-        if(extra == EXTRA_ACCEPT){
+        if(extra == EXTRA_ACCEPT || extra == EXTRA_NONE){
             return VoiceEvent::VOICE_ACCEPT;
-        }else if(extra == EXTRA_REJECT){
-            return VoiceEvent::VOICE_REJECT;
         }else{
-            return -1;
+            return VoiceEvent::VOICE_REJECT;
         }
     }
 
     inline void clear(const int32_t id = -1){
         pthread_mutex_lock(&session_mutex);
-        if(id == -1 || id == session_id){
-            session_id = -1;
-        }
+        if(id == -1 || id == session_id) session_id = -1;
         pthread_mutex_unlock(&session_mutex);
     }
 
@@ -85,11 +81,11 @@ private:
 
     string appid;
     string vt_data;
-    int32_t current_id;
     int32_t session_id;
     int32_t vt_start;
     int32_t vt_end;
     float vt_energy;
+    bool asr_finished = false;
     bool has_vt = false;
     bool openSiren = true;
 };

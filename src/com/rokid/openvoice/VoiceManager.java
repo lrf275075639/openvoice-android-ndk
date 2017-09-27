@@ -14,4 +14,6 @@ public class VoiceManager{
 	public static native void networkStateChange(boolean isconnected);
 	
 	public static native void updateStack(String appid);
+
+    public static native void registCallback(VoiceCallback callback);
 }

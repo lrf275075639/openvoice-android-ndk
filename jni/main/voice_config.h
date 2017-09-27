@@ -1,7 +1,7 @@
 #ifndef VOICE_CONFIG_H
 #define VOICE_CONFIG_H
 
-#define OPENVOICE_PREFILE "/sdcard/rokid/etc/openvoice_profile.json"
+#define OPENVOICE_PREFILE "/system/etc/openvoice_profile.json"
 
 #include <string>
 #include "json.h"
@@ -14,6 +14,7 @@ private:
     std::string _device_type_id;
     std::string _key;
     std::string _secret;
+    std::string _vad_mode;
 
 public:
 
@@ -79,6 +80,12 @@ public:
         if (_key.empty() && !key.empty()) _key = key;
         if (_secret.empty() && !secret.empty()) _secret = secret;
         return true;
+    }
+
+    bool cloud_vad_enable(){
+        if (_vad_mode == "cloud")
+            return true;
+        return false;
     }
 };
 

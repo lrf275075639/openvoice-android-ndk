@@ -55,11 +55,10 @@ static std::string getAddressByHostname(const char *hostname) {
 template <typename T>
 std::string build_printable_indx(const std::vector<T> &from) {
     std::string result;
+    std::ostringstream stm;
     for (T j : from) {
-        char buf[128];
-        snprintf(buf, sizeof(buf), "%Lf", j);
-        result.append(buf).append(" ");
-        //result.append(std::to_string(j)).append(" ");
+        stm << j ;
+        result.append(stm.str()).append(" ");
     }
     return result;
 }

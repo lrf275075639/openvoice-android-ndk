@@ -1,22 +1,11 @@
 LOCAL_PATH:= $(call my-dir)
-CURRENT_PATH := $(LOCAL_PATH)/..
-$(info $(TARGET_ARCH))
-
-define find-files-in-subdirs
-$(sort $(patsubst ./%,%, \
-	  $(shell cd $(1) ; \
-	          find -L $(3) -name $(2) -and -not -name ".*") \
-	 ))
-endef
 
 define all-named-files-under
-$(call find-files-in-subdirs, $(LOCAL_PATH), "$(1)",$(2))
+$(patsubst ./%,%, \
+  $(shell cd $(LOCAL_PATH) ; \
+          find -L $(2) -name "$(1)" -and -not -name ".*") \
+ )
 endef
-
-#include $(CLEAR_VARS)
-#LOCAL_MODULE := curl
-#LOCAL_SRC_FILES := ../prebuilt/libcurl/libs/libcurl.so
-#include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := r2ssp
@@ -96,25 +85,19 @@ $(info CONFIG_USE_AD1)
 L_CFLAGS += -DCONFIG_USE_AD1
 endif
 
-THIRD_INCLUDES += \
-	$(CURRENT_PATH)/../libjsonc/include \
-	$(CURRENT_PATH)/prebuilt/libcurl/include \
-	$(CURRENT_PATH)/prebuilt/support/include 
-
 include $(CLEAR_VARS)
-SRC := $(call all-named-files-under,*.cpp, ../src) 
-LOCAL_SRC_FILES:= \
-	$(SRC) 
-
+LOCAL_SRC_FILES:= $(call all-named-files-under,*.cpp, ../src) 
 LOCAL_C_INCLUDES += \
 		$(THIRD_INCLUDES) \
-		$(CURRENT_PATH)/include 
+		$(LOCAL_PATH)/../include \
+		$(LOCAL_PATH)/../prebuilt/libcurl/include \
+		$(LOCAL_PATH)/../prebuilt/support/include \
+		$(LOCAL_PATH)/../../libjsonc/include
 
 LOCAL_CFLAGS:= $(L_CFLAGS) -Wall -Wextra -std=c++11 -DANDROID_VERSION=$(ANDROID_VERSION)
 LOCAL_MODULE:= libbsiren
 LOCAL_LDLIBS:= -L$(SYSROOT)/usr/lib -llog
 LOCAL_SHARED_LIBRARIES := libr2ssp libztvad libr2vt 
-#LOCAL_SHARED_LIBRARIES += libcurl
 LOCAL_STATIC_LIBRARIES += libjsonc_static libopus
 
 include $(BUILD_SHARED_LIBRARY)

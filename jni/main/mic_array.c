@@ -26,7 +26,7 @@
 #include <asoundlib.h>
 
 #define MIC_SAMPLE_RATE 48000
-#define MIC_CHANNEL 8
+#define MIC_CHANNEL 16
 #define FRAME_COUNT 15360
 
 #define PCM_CARD 0
@@ -35,8 +35,8 @@
 static struct pcm_config pcm_config_in = {
     .channels = MIC_CHANNEL,
     .rate = MIC_SAMPLE_RATE,
-    .period_size = 1024,
-    .period_count = 8,
+    .period_size = 8192,
+    .period_count = 16,
     .format = PCM_FORMAT_S32_LE,
 };
 

@@ -109,10 +109,6 @@ void VoiceService::update_config(const string& device_id, const string& device_t
     }
 }
 
-void VoiceService::regist_callback(const void* _callback) {
-    this->_callback->set_callback(_callback);
-}
-
 int32_t VoiceService::vad_start() {
 	if (mCurrentSpeechState == SPEECH_STATE_PREPARED) {
 		shared_ptr<Options> options = new_options();

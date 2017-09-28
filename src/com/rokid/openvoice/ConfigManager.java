@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import android.content.Context;
 import android.content.res.AssetManager;
 
 public class ConfigManager {
@@ -12,8 +11,8 @@ public class ConfigManager {
 	private AssetManager mAssetManager = null;
 	private final String[] paths = { FileUtils.ETC, FileUtils.WORKDIR_CN };
 
-	public ConfigManager(Context mContext) {
-		mAssetManager = mContext.getAssets();
+	public ConfigManager() {
+		mAssetManager = VoiceApplication.getContext().getAssets();
 	}
 
 	public boolean install() {

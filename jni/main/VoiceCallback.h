@@ -10,7 +10,9 @@ private:
     void* callback;
 
 public:
-    void set_callback(const void* callback){}
+
+    template<typename F>
+    void set_callback(const F& callback){}
 
     void voice_event(const int32_t id, const int32_t event, const double sl = 0.0, const double energy = 0.0);
 

@@ -30,7 +30,9 @@ public:
 	void network_state_change(const bool isconnect);
 	void update_stack(const string& appid);
     void update_config(const string&, const string&, const string&, const string&);
-	void regist_callback(const void* callback);
+
+    template<typename F>
+	void regist_callback(const F& callback){this->_callback->set_callback(callback);}
 
 private:
 	int mCurrentSirenState = SIREN_STATE_UNKNOWN;

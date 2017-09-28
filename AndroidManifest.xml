@@ -5,10 +5,13 @@
 
     <uses-sdk android:minSdkVersion="19" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
-	<application android:persistent="true">
+    <application 
+        android:name="VoiceApplication"
+        android:persistent="true">
         <service android:name="com.rokid.openvoice.VoiceService" />
 		<service android:name="com.rokid.openvoice.SirenService" android:exported="true" >
 			<intent-filter>

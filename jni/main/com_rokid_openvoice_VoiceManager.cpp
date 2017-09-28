@@ -1,13 +1,17 @@
 #include <jni.h>
 #include "VoiceService.h"
 
-shared_ptr<VoiceService> service = make_shared<VoiceService>();
+shared_ptr<VoiceService> voice_service = make_shared<VoiceService>();
 
-//extern JavaVM* _vm;
-static jmethodID voice_event;
-static jmethodID intermediate_result;
-static jmethodID voice_command;
-static jmethodID speech_error;
+JavaVM* _vm;
+static jmethodID callback_method_table[4];
+
+enum{
+        VOICE_EVENT_ID = 0,
+        INTERMEDIATE_RESULT_ID,
+        VOICE_COMMAND_ID,
+        SPEECH_ERROR_ID,
+};
 
 extern "C" {
 JNIEXPORT jboolean JNICALL 
@@ -21,94 +25,122 @@ JNIEXPORT void JNICALL
 JNIEXPORT void JNICALL 
         Java_com_rokid_openvoice_VoiceManager_updateStack(JNIEnv *env, jclass, jstring appid);
 JNIEXPORT void JNICALL 
-        Java_com_rokid_openvoice_VoiceManager_registCallback(JNIEnv *env, jclass, jstring appid, jobject obj);
-//jint JNI_OnLoad(JavaVM* vm, void* reserved);
+        Java_com_rokid_openvoice_VoiceManager_updateConfig(JNIEnv *env, jclass, 
+        jstring device_id, jstring device_type_id, jstring key, jstring secret);
+JNIEXPORT void JNICALL 
+        Java_com_rokid_openvoice_VoiceManager_registCallback(JNIEnv *env, jclass, jobject obj);
+jint JNI_OnLoad(JavaVM* vm, void* reserved);
 }
+
 
 JNIEXPORT jboolean JNICALL 
 Java_com_rokid_openvoice_VoiceManager_init(JNIEnv *env, jclass)
 {
 	LOGD("%s", __FUNCTION__);
     jclass callback = env->FindClass("com/rokid/openvoice/VoiceCallback");
-    if(!callback){
+    if(callback == NULL){
         LOGI("find class error");
         return false;
     }
-    voice_event = env->GetMethodID(callback, "onVoiceEvent", "(IIDD)V");
-    intermediate_result = env->GetMethodID(callback, "onIntermediateResult", "(IILjava/lang/String;)V");
-    voice_command = env->GetMethodID(callback, "onVoiceCommand", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
-    speech_error = env->GetMethodID(callback, "onSpeechError", "(II)V");
-    return service->init();
+    callback_method_table[VOICE_EVENT_ID]
+        = env->GetMethodID(callback, "onVoiceEvent", "(IIDD)V");
+    callback_method_table[INTERMEDIATE_RESULT_ID]
+        = env->GetMethodID(callback, "onIntermediateResult", "(IILjava/lang/String;)V");
+    callback_method_table[VOICE_COMMAND_ID]
+        = env->GetMethodID(callback, "onVoiceCommand", "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+    callback_method_table[SPEECH_ERROR_ID]
+        = env->GetMethodID(callback, "onSpeechError", "(II)V");
+    return voice_service->init();
 }
 
 JNIEXPORT void JNICALL 
 Java_com_rokid_openvoice_VoiceManager_startSiren(JNIEnv *env, jclass, jboolean isopen)
 {
 	LOGD("%s", __FUNCTION__);
-	service->start_siren((bool)isopen);
+	voice_service->start_siren((bool)isopen);
 }
 
 JNIEXPORT void JNICALL 
 Java_com_rokid_openvoice_VoiceManager_setSirenState(JNIEnv *env, jclass, jint state)
 {
 	LOGD("%s", __FUNCTION__);
-	service->set_siren_state((int)state);
+	voice_service->set_siren_state((int)state);
 }
 
 JNIEXPORT void JNICALL 
 Java_com_rokid_openvoice_VoiceManager_networkStateChange(JNIEnv *env, jclass, jboolean isconnect)
 {
 	LOGD("%s", __FUNCTION__);
-	service->network_state_change((bool)isconnect);
+	voice_service->network_state_change((bool)isconnect);
 }
 
 JNIEXPORT void JNICALL 
 Java_com_rokid_openvoice_VoiceManager_updateStack(JNIEnv *env, jclass, jstring appid)
 {
 	LOGD("%s", __FUNCTION__);
-    service->update_stack(string(env->GetStringUTFChars(appid, NULL)));
+    voice_service->update_stack(string(env->GetStringUTFChars(appid, NULL)));
 }
 
 JNIEXPORT void JNICALL 
-Java_com_rokid_openvoice_VoiceManager_registCallback(JNIEnv *env, jclass, jstring appid, jobject obj){
-	LOGD("%s      %d   %d", __FUNCTION__, voice_event, obj);
-//    env->CallVoidMethod(obj, voice_event, 1);
-//    service->regist_callback(jobj);
+Java_com_rokid_openvoice_VoiceManager_updateConfig(JNIEnv *env, jclass, 
+        jstring device_id, jstring device_type_id, jstring key, jstring secret)
+{
+	LOGD("%s", __FUNCTION__);
+    voice_service->update_config(
+                string(env->GetStringUTFChars(device_id, NULL)),
+                string(env->GetStringUTFChars(device_type_id, NULL)),
+                string(env->GetStringUTFChars(key, NULL)),
+                string(env->GetStringUTFChars(secret, NULL)));
 }
 
-//static JNINativeMethod _options_nmethods[] = {
-//	{ "init", "()J", (void*)com_rokid_openvoice_VoiceManager_init },
-//	{ "startSiren", "(J)V", (void*)com_rokid_openvoice_VoiceManager_startSiren },
-//	{ "setSirenState", "(JLjava/lang/String;)V", (void*)com_rokid_openvoice_VoiceManager_setSirenState },
-//	{ "networkStateChange", "(JLjava/lang/String;)V", (void*)com_rokid_openvoice_VoiceManager_networkStateChange },
-//	{ "updateStack", "(JLjava/lang/String;)V", (void*)com_rokid_openvoice_VoiceManager_updateStack },
-//	{ "registCallback", "(JZ)V", (void*)com_rokid_openvoice_VoiceManager_registCallback },
-//};
-//
-//int register_com_rokid_openvoice_VoiceManager(JNIEnv* env)
-//{
-//	const char* kclass = "com/rokid/openvoice/VoiceManager";
-//	jclass target = env->FindClass(kclass);
-//	if (target == NULL) {
-//		Log::e("find class for %s failed", kclass);
-//		return -1;
-//	}
-//	return jniRegisterNativeMethods(env, kclass, _options_nmethods, NELEM(_voice_manager_nmethods));
-//}
-//
-//jint JNI_OnLoad(JavaVM* vm, void* reserved)
-//{
-//	JNIEnv* env;
-//
-//	// store a global java vm pointer
-//	// for voice_manager java callback
-//    _vm = vm;
-//
-//	if (vm->GetEnv((void**)&env, JNI_VERSION_1_4) != JNI_OK) {
-//		LOGD("%s: JNI_OnLoad failed", "VoiceManager");
-//		return -1;
-//	}
-//    register_com_rokid_openvoice_VoiceManager(env);
-//	return JNI_VERSION_1_4;
-//}
+JNIEXPORT void JNICALL 
+Java_com_rokid_openvoice_VoiceManager_registCallback(JNIEnv *env, jclass, jobject obj){
+	LOGD("%s", __FUNCTION__);
+//    env->CallVoidMethod(obj, callback_method_table[VOICE_EVENT_ID], 1, 2, 3L, 4L);
+    voice_service->regist_callback([&](int32_t method_id, va_list ap){
+        if(obj){env->CallVoidMethod(obj, callback_method_table[method_id], ap);
+    }});
+}
+
+static JNINativeMethod method_table[] = {
+	{ "init", "()Z", (void*)Java_com_rokid_openvoice_VoiceManager_init},
+	{ "startSiren", "(Z)V", (void*)Java_com_rokid_openvoice_VoiceManager_startSiren},
+	{ "setSirenState", "(I)V", (void*)Java_com_rokid_openvoice_VoiceManager_setSirenState},
+	{ "networkStateChange", "(Z)V", (void*)Java_com_rokid_openvoice_VoiceManager_networkStateChange},
+	{ "updateStack", "(Ljava/lang/String;)V", (void*)Java_com_rokid_openvoice_VoiceManager_updateStack},
+	{ "updateConfig", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", (void*)Java_com_rokid_openvoice_VoiceManager_updateConfig},
+	{ "registCallback", "(Lcom/rokid/openvoice/VoiceCallback;)V", (void*)Java_com_rokid_openvoice_VoiceManager_registCallback},
+};
+
+int register_com_rokid_openvoice_VoiceManager(JNIEnv* env)
+{
+	const char* className = "com/rokid/openvoice/VoiceManager";
+	jclass target = env->FindClass(className);
+	if (target == NULL) {
+		LOGD("find class for %s failed", className);
+		return -1;
+	}
+#define NELEM(x)            (sizeof(x)/sizeof(*(x)))
+    if (env->RegisterNatives(target, method_table, NELEM(method_table)) < 0) {
+        char* msg;
+        asprintf(&msg, "RegisterNatives failed for '%s'; aborting...", className);
+        env->FatalError(msg);
+    }
+    return 0;
+}
+
+jint JNI_OnLoad(JavaVM* vm, void* reserved)
+{
+	JNIEnv* env;
+
+	// store a global java vm pointer
+	// for voice_manager java callback
+    _vm = vm;
+	if (vm->GetEnv((void**)&env, JNI_VERSION_1_4) != JNI_OK) {
+		LOGD("%s: JNI_OnLoad failed", "VoiceManager");
+		return -1;
+	}
+    register_com_rokid_openvoice_VoiceManager(env);
+	return JNI_VERSION_1_4;
+}
 

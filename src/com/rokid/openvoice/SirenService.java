@@ -4,19 +4,23 @@ package com.rokid.openvoice;
  */
 public class SirenService extends android.app.Service{
 
-    private static final int SIREN_AWAKE = 1;
-    private static final int SIREN_SLEEP = 2;
-
     @Override
     public int onStartCommand(android.content.Intent intent, int flags, int startId) {
-        boolean isOpen = intent.getBooleanExtra("status", false);
-        android.util.Log.e("VoiceService", "onStartCommand  isOpen : " + isOpen);
-        if(VoiceService.initialized){
-            if(isOpen){
-                VoiceManager.setSirenState(VoiceService.SIREN_STATE_AWAKE);
-            }else{
-				VoiceManager.setSirenState(VoiceService.SIREN_STATE_SLEEP);
-            }
+        int action = intent.getIntExtra("action", -1);
+        android.util.Log.e("VoiceService", "onStartCommand  action : " + action);
+        switch(action){
+            case VoiceManager.SIREN_STATE_AWAKE:
+                VoiceManager.setSirenState(VoiceManager.SIREN_STATE_AWAKE);
+                break;
+            case VoiceManager.SIREN_STATE_SLEEP:
+			    VoiceManager.setSirenState(VoiceManager.SIREN_STATE_SLEEP);
+                break;
+            case VoiceManager.SIREN_STATE_START:
+			    VoiceManager.startSiren(true);
+                break;
+            case VoiceManager.SIREN_STATE_STOP:
+			    VoiceManager.startSiren(false);
+                break;
         }
         return super.onStartCommand(intent, flags, startId);
     }

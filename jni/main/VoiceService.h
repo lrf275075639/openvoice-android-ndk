@@ -32,7 +32,7 @@ public:
     void update_config(const string&, const string&, const string&, const string&);
 
     template<typename F>
-	void regist_callback(const F& callback){this->_callback->set_callback(callback);}
+	void regist_callback(const F& send){this->_callback->set_callback(send);}
 
 private:
 	int mCurrentSirenState = SIREN_STATE_UNKNOWN;
@@ -90,6 +90,7 @@ private:
     bool asr_finished = false;
     bool has_vt = false;
     bool openSiren = true;
+    bool local_sleep = false;
 };
 
 #endif // VOICE_SERVICE_H

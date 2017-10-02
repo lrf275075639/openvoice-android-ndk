@@ -62,9 +62,9 @@ public class VoiceService extends android.app.Service{
 	public void onCreate(){
 		ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo mNetworkInfo = cm.getActiveNetworkInfo();
-//		if(mNetworkInfo != null){
+		if(mNetworkInfo != null){
 		    VoiceManager.networkStateChange(true);
-//		}
+		}
 //		mUEventObserver.startObserving("/sound/card1/pcmC1D0c");
 	}
 	
@@ -84,19 +84,19 @@ public class VoiceService extends android.app.Service{
 	
 	}
 
-	private final android.os.UEventObserver mUEventObserver = new android.os.UEventObserver() {
-		 
-		@Override
-		public void onUEvent(android.os.UEventObserver.UEvent event){
-			Log.e(TAG, event.toString());
-    		String action = event.get("ACTION");
-    		if("add".equals(action)){
-    			VoiceManager.startSiren(true);	
-    		}else if("remove".equals(action)){
-    			VoiceManager.startSiren(false);
-    		}
-		}
-	};
+//	private final android.os.UEventObserver mUEventObserver = new android.os.UEventObserver() {
+//		 
+//		@Override
+//		public void onUEvent(android.os.UEventObserver.UEvent event){
+//			Log.e(TAG, event.toString());
+//    		String action = event.get("ACTION");
+//    		if("add".equals(action)){
+//    			VoiceManager.startSiren(true);	
+//    		}else if("remove".equals(action)){
+//    			VoiceManager.startSiren(false);
+//    		}
+//		}
+//	};
 
 	@Override
 	public android.os.IBinder onBind(Intent intent) {

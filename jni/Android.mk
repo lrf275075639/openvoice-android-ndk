@@ -32,7 +32,7 @@ LOCAL_MODULE := libopenvoice2
 LOCAL_SRC_FILES := main/com_rokid_openvoice_VoiceManager.cpp
         
 LOCAL_LDLIBS := -llog
-LOCAL_SHARED_LIBRARIES := libopenvoice
+LOCAL_SHARED_LIBRARIES := libopenvoice libbsiren
 LOCAL_CPPFLAGS += -std=c++11
    
 include $(BUILD_SHARED_LIBRARY)

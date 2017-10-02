@@ -39,7 +39,7 @@ public final class VoiceCallback{
         Log.e(TAG, "id \t " + id);
         Log.e(TAG, "asr \t " + asr);
         Log.e(TAG, "nlp \t" + nlp);
-        Log.e(TAG, "action \t" + action);
+        Log.e(TAG, "action " + action);
         mHandler.obtainMessage(VoiceService.MSG_VOICE_COMMAND, new VoiceCommand(id, asr, nlp, action)).sendToTarget();
     }
 

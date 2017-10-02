@@ -69,6 +69,7 @@ void VoiceService::network_state_change(const bool connected) {
         if(_voice_config->config(
                     [&](const char* key, const char* value){_speech->config(key, value);}) 
                     && _speech->prepare()) {
+            clear();
 			mCurrentSpeechState = SPEECH_STATE_PREPARED;
 			pthread_create(&response_thread, NULL,
 					[](void* token)->void* {return ((VoiceService*)token)->onResponse();},
@@ -201,13 +202,12 @@ void* VoiceService::onEvent() {
                 if(!_voice_config->cloud_vad_enable()){
                     LOGV("VAD_END\t\t ID  :   <<%d>> ", session_id);
                     if(session_id > 0) _speech->end_voice(session_id);
-                    //_callback->voice_event(session_id, VoiceEvent::VOICE_END);
                     clear();
                 }
                 break;
             case SIREN_EVENT_VAD_CANCEL:
                 LOGI("VAD_CANCEL\t\t ID  :   <<%d>> \t  %d", session_id, asr_finished);
-                if(session_id > 0 && !asr_finished) _speech->cancel(session_id);
+                if(session_id > 0 && (!asr_finished || local_sleep)) _speech->cancel(session_id);
                 asr_finished = false;
                 if(!_voice_config->cloud_vad_enable()) clear();
                 break;
@@ -215,10 +215,8 @@ void* VoiceService::onEvent() {
                 voice_print(_event);
                 break;
             case SIREN_EVENT_SLEEP:
-                if(!_voice_config->cloud_vad_enable()){
-                    _callback->voice_event(session_id, VoiceEvent::VOICE_SLEEP);
-                    LOGV("SLEEP");
-                }
+                local_sleep = true;
+                _callback->voice_event(session_id, VoiceEvent::VOICE_LOCAL_SLEEP);
                 break;
         }
 		delete[] (char *)_event;
@@ -263,26 +261,26 @@ void* VoiceService::onResponse() {
 //                        set_siren_state(SIREN_STATE_SLEEP);
 //                        asr_finished = true;
 //                    }
-//                    asr = sr.asr;
+                    asr = sr.asr;
 //                }
             }else if(sr.type == SPEECH_RES_END) {
                 LOGV("result : nlp\t%s", sr.nlp.c_str());
-                LOGV("result : action  %s", sr.action.c_str());
+                LOGV("result : action\t%s", sr.action.c_str());
                 _callback->voice_command(sr.id, asr, sr.nlp, sr.action);
             }else if(sr.type == SPEECH_RES_CANCELLED){
-                _callback->voice_event(sr.id, VoiceEvent::VOICE_CANCEL);
+                if(!local_sleep) _callback->voice_event(sr.id, VoiceEvent::VOICE_CANCEL);
+                local_sleep = false;
             }else if(sr.type == SPEECH_RES_ERROR && (sr.err != SPEECH_SUCCESS)) {
                 if(session_id == sr.id && _voice_config->cloud_vad_enable())
                     set_siren_state(SIREN_STATE_SLEEP);
                 _callback->speech_error(sr.id, sr.err);
                 asr_finished = false;
+                local_sleep = false;
                 activation.clear();
             }
         }
         if(sr.type >= SPEECH_RES_END) clear(sr.id);
 	}
-    clear();
 	LOGV("exit !!");
 	return NULL;
 }
-

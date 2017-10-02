@@ -13,6 +13,9 @@ public class VoiceApplication extends android.app.Application{
     @Override
     public void onCreate() {
         mContext = this;
+
+//        new ConfigManager().install();
+//        VoiceManager.init();
     }
 
     public static Context getContext(){

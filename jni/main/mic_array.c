@@ -26,7 +26,7 @@
 #include <asoundlib.h>
 
 #define MIC_SAMPLE_RATE 48000
-#define MIC_CHANNEL 16
+#define MIC_CHANNEL 8
 #define FRAME_COUNT 15360
 
 #define PCM_CARD 0
@@ -35,8 +35,8 @@
 static struct pcm_config pcm_config_in = {
     .channels = MIC_CHANNEL,
     .rate = MIC_SAMPLE_RATE,
-    .period_size = 8192,
-    .period_count = 16,
+    .period_size = 1024,
+    .period_count = 8,
     .format = PCM_FORMAT_S32_LE,
 };
 
@@ -217,9 +217,8 @@ static int mic_array_device_start_stream(struct mic_array_device_t* dev)
 {
     struct pcm* pcm = NULL;
 
-    int card = 0;//find_snd("USB-Audio");
-    LOGI("find card with %d", card);
-    if (card <= 0) {
+    int card = find_snd("USB-Audio");
+    if (card < 0) {
         card = PCM_CARD;
     }
     pcm = pcm_open(card, PCM_DEVICE, PCM_IN, &pcm_config_in);

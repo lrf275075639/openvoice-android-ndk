@@ -1,5 +1,5 @@
 APP_ABI := armeabi-v7a
-APP_PLATFORM := android-19
+APP_PLATFORM := android-23
 
 ANDROID_VERSION = $(shell if [ $(subst android-,,$(APP_PLATFORM)) -ge 21 ]; then echo 21; else echo 19; fi)
 

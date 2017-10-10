@@ -90,7 +90,6 @@ LOCAL_SRC_FILES:= $(call all-named-files-under,*.cpp, ../src)
 LOCAL_C_INCLUDES += \
 		$(THIRD_INCLUDES) \
 		$(LOCAL_PATH)/../include \
-		$(LOCAL_PATH)/../prebuilt/libcurl/include \
 		$(LOCAL_PATH)/../prebuilt/support/include \
 		$(LOCAL_PATH)/../../libjsonc/include
 
@@ -99,5 +98,9 @@ LOCAL_MODULE:= libbsiren
 LOCAL_LDLIBS:= -L$(SYSROOT)/usr/lib -llog
 LOCAL_SHARED_LIBRARIES := libr2ssp libztvad libr2vt 
 LOCAL_STATIC_LIBRARIES += libjsonc_static libopus
+
+ifdef CONFIG_BF_MVDR
+LOCAL_SHARED_LIBRARIES += libr2mvdrbf
+endif
 
 include $(BUILD_SHARED_LIBRARY)

@@ -13,7 +13,7 @@ VoiceService::VoiceService() {
 
     _voice_config = make_shared<VoiceConfig>();
 	_callback = make_shared<VoiceCallback>();
-	_speech = new_speech();
+    _speech = Speech::new_instance();
     clear();
 }
 
@@ -66,9 +66,7 @@ void VoiceService::network_state_change(const bool connected) {
 	LOGV("network_state_change      isconnect  <<%d>>", connected);
 	pthread_mutex_lock(&speech_mutex);
 	if (connected && mCurrentSpeechState != SPEECH_STATE_PREPARED) {
-        if(_voice_config->config(
-                    [&](const char* key, const char* value){_speech->config(key, value);}) 
-                    && _speech->prepare()) {
+        if(_voice_config->prepare(_speech)){
             clear();
 			mCurrentSpeechState = SPEECH_STATE_PREPARED;
 			pthread_create(&response_thread, NULL,
@@ -111,26 +109,20 @@ void VoiceService::update_config(const string& device_id, const string& device_t
 }
 
 int32_t VoiceService::vad_start() {
-	if (mCurrentSpeechState == SPEECH_STATE_PREPARED) {
-		shared_ptr<Options> options = new_options();
-		if (options.get() && has_vt) {
-			options->set("voice_trigger", vt_data.c_str());
-			char buf[64];
-			snprintf(buf, sizeof(buf), "%d", vt_start);
-			options->set("trigger_start", buf);
-			snprintf(buf, sizeof(buf), "%d", vt_end - vt_start);
-			options->set("trigger_length", buf);
-			snprintf(buf, sizeof(buf), "%F", vt_energy);
-			options->set("voice_power", buf);
-			has_vt = false;
-		}
-		options->set("stack", appid.empty() ? "" : appid.c_str());
-		string json;
-		options->to_json_string(json);
-		LOGV("%s \t %s", __FUNCTION__, json.c_str());
-		return _speech->start_voice(options);
-	}
-	return -1;
+    if(mCurrentSpeechState == SPEECH_STATE_PREPARED) {
+        VoiceOptions options;
+        if(has_vt) {
+            options.voice_trigger.assign(vt_word);
+            options.trigger_start = vt_start;
+            options.trigger_length = vt_end - vt_start;
+            options.voice_power = vt_energy;
+            has_vt = false;
+        }
+        options.stack = appid;
+//        options.skill_options = _callback->get_skill_options();
+        return _speech->start_voice(&options);
+    }
+    return -1;
 }
 
 void VoiceService::voice_print(const voice_event_t *voice_event) {
@@ -138,7 +130,7 @@ void VoiceService::voice_print(const voice_event_t *voice_event) {
 		vt_start = voice_event->vt.start;
 		vt_end = voice_event->vt.end;
 		vt_energy = voice_event->vt.energy;
-		vt_data = (char*) voice_event->buff;
+		vt_word = (char*) voice_event->buff;
 		has_vt = true;
 	}
 }
@@ -253,16 +245,16 @@ void* VoiceService::onResponse() {
             }
         }
         if(!arbitration(activation)) {
-            if(sr.type == SPEECH_RES_INTER){// || sr.type == SPEECH_RES_ASR_FINISH){
+            if(sr.type == SPEECH_RES_INTER || sr.type == SPEECH_RES_ASR_FINISH){
                 LOGV("result : asr\t%s", sr.asr.c_str());
                 _callback->intermediate_result(sr.id, sr.type, sr.asr);
-//                if(sr.type == SPEECH_RES_ASR_FINISH){
-//                    if(session_id == sr.id || _voice_config->cloud_vad_enable()){
-//                        set_siren_state(SIREN_STATE_SLEEP);
-//                        asr_finished = true;
-//                    }
-                    asr = sr.asr;
-//                }
+                if(sr.type == SPEECH_RES_ASR_FINISH){
+                    if(session_id == sr.id || _voice_config->cloud_vad_enable()){
+                        set_siren_state(SIREN_STATE_SLEEP);
+                        asr_finished = true;
+                    }
+                  asr = sr.asr;
+                }
             }else if(sr.type == SPEECH_RES_END) {
                 LOGV("result : nlp\t%s", sr.nlp.c_str());
                 LOGV("result : action\t%s", sr.action.c_str());

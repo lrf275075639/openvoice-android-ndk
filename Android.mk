@@ -6,7 +6,10 @@ $(shell cp -r $(LOCAL_PATH)/workdir_cn $(TARGET_OUT)/workdir_cn)
 
 include $(CLEAR_VARS)
 
-LOCAL_SRC_FILES := $(call all-java-files-under, src)
+LOCAL_SRC_FILES := \
+		$(call all-java-files-under, src) \
+		src/com/rokid/openvoice/IVoiceService.aidl \
+		src/com/rokid/openvoice/IVoiceCallback.aidl
 
 LOCAL_ALLOW_UNDEFINED_SYMBOLS := true
 LOCAL_MODULE_TAGS := optional
@@ -33,6 +36,20 @@ LOCAL_PREBUILT_LIBS := \
 #		libcrypto:libs/armeabi-v7a/libcrypto.so \
 		libssl:libs/armeabi-v7a/libssl.so \
 		libtinyalsa:libs/armeabi-v7a/libtinyalsa.so \
-		libz:libs/armeabi-v7a/libz.so \
+		libz:libs/armeabi-v7a/libz.so
 
 include $(BUILD_MULTI_PREBUILT)
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := \
+		$(call all-java-files-under, jar) \
+		jar/com/rokid/openvoice/IVoiceService.aidl \
+		jar/com/rokid/openvoice/IVoiceCallback.aidl
+
+LOCAL_JACK_ENABLED = disabled
+
+LOCAL_MODULE := rokid_openvoice_sdk
+
+include $(BUILD_STATIC_JAVA_LIBRARY)
+

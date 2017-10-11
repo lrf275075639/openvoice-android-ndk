@@ -646,11 +646,11 @@ void SirenProcessorImpl::process(char *datain, int lenin, int aecflag, int awake
             }
             
             if (!state.canceled) {
-                if (unit.m_pMem_cod->getdatalen() > 100) {
+                if (!pre && unit.m_pMem_cod->getdatalen() > 100) {
                     addMsg(r2ad_vad_data, unit.m_pMem_cod);
                 }
 
-                if (vad2 & r2vad_audio_end && unit.m_pMem_cod->getdatalen() > 0) {
+                if ((vad2 & r2vad_audio_end) && unit.m_pMem_cod->getdatalen() > 0) {
                     addMsg(r2ad_vad_data, unit.m_pMem_cod);
                 }
             }

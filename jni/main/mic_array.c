@@ -32,7 +32,7 @@
 #define PCM_CARD 0
 #define PCM_DEVICE 0
 
-static struct pcm_config pcm_config_in = {
+static struct pcm_config pcm_config_default = {
     .channels = MIC_CHANNEL,
     .rate = MIC_SAMPLE_RATE,
     .period_size = 1024,
@@ -185,9 +185,6 @@ int mic_array_device_open(struct mic_array_device_t **device)
     dev->get_stream_buff_size = mic_array_device_get_stream_buff_size;
     dev->find_card = mic_array_device_find_card;
 
-    dev->channels = MIC_CHANNEL;
-    dev->sample_rate = MIC_SAMPLE_RATE;
-    dev->bit = pcm_format_to_bits(pcm_config_in.format);
     dev->pcm = NULL;
     dev->frame_cnt = FRAME_COUNT;
     dev_ex->buffer = (char*)malloc(dev->frame_cnt);
@@ -221,7 +218,7 @@ static int mic_array_device_start_stream(struct mic_array_device_t* dev)
     if (card < 0) {
         card = PCM_CARD;
     }
-    pcm = pcm_open(card, PCM_DEVICE, PCM_IN, &pcm_config_in);
+    pcm = pcm_open(card, PCM_DEVICE, PCM_IN, &pcm_config_default);
     if (!pcm || !pcm_is_ready(pcm)) {
         LOGE("Unable to open PCM device %u (%s)\n", card, pcm_get_error(pcm));
         if (pcm != NULL) {
@@ -332,7 +329,7 @@ static int mic_array_device_read_stream(struct mic_array_device_t* dev, char* bu
             dev_ex->pts = 0;
             return ret;
         }
-        		LOGE("-------------------cnt : %d, left : %d, cache : %d, frame_cnt : %d", cnt, left, dev_ex->pts, frame_cnt);
+        LOGE("-------------------cnt : %d, left : %d, cache : %d, frame_cnt : %d", cnt, left, dev_ex->pts, frame_cnt);
         target = buff + dev_ex->pts + cnt * size;
         left = frame_cnt - (dev_ex->pts + cnt * size);
         dev_ex->pts = 0;

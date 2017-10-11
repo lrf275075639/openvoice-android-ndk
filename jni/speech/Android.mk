@@ -20,9 +20,10 @@ LOCAL_C_INCLUDES := \
 	$(MY_LOCAL_PATH)/src/common
 
 COMMON_SRC := \
+	$(MY_LOCAL_PATH)/proto/speech_types.pb.cc \
+	$(MY_LOCAL_PATH)/proto/auth.pb.cc \
+	$(MY_LOCAL_PATH)/proto/tts.pb.cc \
 	$(MY_LOCAL_PATH)/proto/speech.pb.cc \
-	$(MY_LOCAL_PATH)/src/common/speech_config.cc \
-	$(MY_LOCAL_PATH)/src/common/speech_config.h \
 	$(MY_LOCAL_PATH)/src/common/log.cc \
 	$(MY_LOCAL_PATH)/src/common/log.h \
 	$(MY_LOCAL_PATH)/src/common/speech_connection.cc \
@@ -33,11 +34,6 @@ TTS_SRC := \
 	$(MY_LOCAL_PATH)/src/tts/tts_impl.h \
 	$(MY_LOCAL_PATH)/src/tts/types.h
 
-ASR_SRC := \
-	$(MY_LOCAL_PATH)/src/asr/asr_impl.cc \
-	$(MY_LOCAL_PATH)/src/asr/asr_impl.h \
-	$(MY_LOCAL_PATH)/src/asr/types.h
-
 SPEECH_SRC := \
 	$(MY_LOCAL_PATH)/src/speech/speech_impl.cc \
 	$(MY_LOCAL_PATH)/src/speech/speech_impl.h \
@@ -46,7 +42,6 @@ SPEECH_SRC := \
 LOCAL_SRC_FILES := \
 	$(COMMON_SRC) \
 	$(TTS_SRC) \
-	$(ASR_SRC) \
 	$(SPEECH_SRC)
 
 LOCAL_CFLAGS := $(COMMON_CFLAGS) \

@@ -82,7 +82,7 @@ private:
     list<voice_event_t*> _events;
 
     string appid;
-    string vt_data;
+    string vt_word;
     int32_t session_id;
     int32_t vt_start;
     int32_t vt_end;

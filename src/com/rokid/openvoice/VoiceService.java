@@ -73,44 +73,65 @@ public class VoiceService extends android.app.Service{
 //		mUEventObserver.startObserving("/sound/card1/pcmC1D0c");
 	}
 	
-	public void handleVoiceEvent(int id, int event, double sl, double energy){
-		if(callback != null){
-			try {
-				callback.voiceEvent(id, event, sl, energy);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		}
+	private void handleVoiceEvent(int id, int event, double sl, double energy){
+		Intent intent = new Intent("rokid.intent.VoiceEvent");
+		intent.putExtra("id", id);
+		intent.putExtra("event", event);
+		intent.putExtra("sl", sl);
+		intent.putExtra("energy", energy);
+		sendBroadcast(intent);
+//		if(callback != null){
+//			try {
+//				callback.voiceEvent(id, event, sl, energy);
+//			} catch (RemoteException e) {
+//				e.printStackTrace();
+//			}
+//		}
 	}
 	
-	public void handleIntermediateResult(int id, int type, String asr){
-		if(callback != null){
-			try {
-				callback.intermediateResult(id, type, asr);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		}
+	private void handleIntermediateResult(int id, int type, String asr){
+		Intent intent = new Intent("rokid.intent.IntermediateResult");
+		intent.putExtra("id", id);
+		intent.putExtra("type", type);
+		intent.putExtra("asr", asr);
+		sendBroadcast(intent);
+//		if(callback != null){
+//			try {
+//				callback.intermediateResult(id, type, asr);
+//			} catch (RemoteException e) {
+//				e.printStackTrace();
+//			}
+//		}
 	}
 	
-	public void handleVoiceCommand(int id, String asr, String nlp, String action){
-		if(callback != null){
-			try {
-				callback.voiceCommand(id, asr, nlp, action);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		}
+	private void handleVoiceCommand(int id, String asr, String nlp, String action){
+		Intent intent = new Intent("rokid.intent.VoiceCommand");
+		intent.putExtra("id", id);
+		intent.putExtra("asr", asr);
+		intent.putExtra("nlp", nlp);
+		intent.putExtra("action", action);
+		sendBroadcast(intent);
+//		if(callback != null){
+//			try {
+//				callback.voiceCommand(id, asr, nlp, action);
+//			} catch (RemoteException e) {
+//				e.printStackTrace();
+//			}
+//		}
 	}
 
-	public void handleSpeechError(int id, int errcode){
-		if(callback != null){
-			try {
-				callback.speechError(id, errcode);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		}
+	private void handleSpeechError(int id, int errcode){
+		Intent intent = new Intent("rokid.intent.SpeechError");
+		intent.putExtra("id", id);
+		intent.putExtra("errcode", errcode);
+		sendBroadcast(intent);
+//		if(callback != null){
+//			try {
+//				callback.speechError(id, errcode);
+//			} catch (RemoteException e) {
+//				e.printStackTrace();
+//			}
+//		}
 	}
 
 	private final IVoiceService.Stub voice_service = new IVoiceService.Stub() {

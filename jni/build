@@ -15,5 +15,3 @@ ndk-build -j8
 cd ../../../
 ndk-build clean
 ndk-build -j8
-
-exit

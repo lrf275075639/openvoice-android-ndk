@@ -16,9 +16,8 @@ public final class VoiceCallback {
 	}
 
 	private void onVoiceEvent(int id, int event, double sl, double energy) {
-		Log.e(TAG, "onVoiceEvent");
 		Message obtain = Message.obtain();
-		obtain.what = VoiceService.MSG_INTERMEDIATE_RESULT;
+		obtain.what = VoiceService.MSG_VOICE_EVENT;
 		Bundle mBundle = new Bundle();
 		mBundle.putInt("id", id);
 		mBundle.putInt("event", event);
@@ -29,7 +28,6 @@ public final class VoiceCallback {
 	}
 
 	private void onIntermediateResult(int id, int type, String asr) {
-		Log.e(TAG, "onIntermediateResult");
 		Message obtain = Message.obtain();
 		obtain.what = VoiceService.MSG_INTERMEDIATE_RESULT;
 		Bundle mBundle = new Bundle();
@@ -41,12 +39,8 @@ public final class VoiceCallback {
 	}
 
 	private void onVoiceCommand(int id, String asr, String nlp, String action) {
-		Log.e(TAG, "id \t " + id);
-		Log.e(TAG, "asr \t " + asr);
-		Log.e(TAG, "nlp \t" + nlp);
-		Log.e(TAG, "action " + action);
 		Message obtain = Message.obtain();
-		obtain.what = VoiceService.MSG_INTERMEDIATE_RESULT;
+		obtain.what = VoiceService.MSG_VOICE_COMMAND;
 		Bundle mBundle = new Bundle();
 		mBundle.putInt("id", id);
 		mBundle.putString("asr", asr);
@@ -57,7 +51,6 @@ public final class VoiceCallback {
 	}
 
 	private void onSpeechError(int id, int errcode) {
-		Log.e(TAG, "onSpeechError");
 		mHandler.obtainMessage(VoiceService.MSG_SPEECH_ERROR, id, errcode).sendToTarget();
 	}
 }

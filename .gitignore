@@ -9,3 +9,4 @@ bin
 gen
 obj
 values-
+**/jni/blacksiren/libbsiren/libs/armeabi-v7a/

@@ -1,5 +1,11 @@
 package com.rokid.openvoice;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -9,28 +15,46 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.rokid.voicerec.BearKid;
+import com.rokid.voicerec.BearKidResult;
+
 public class VoiceService extends android.app.Service{
 
     private String TAG = getClass().getSimpleName();
-    private IVoiceCallback callback;
     
-    public static final int MSG_VOICE_EVENT             = 0;
-    public static final int MSG_INTERMEDIATE_RESULT		= 1;
-    public static final int MSG_VOICE_COMMAND           = 2;
-    public static final int MSG_SPEECH_ERROR            = 3;
+    public static final int MSG_VOICE_EVENT             	= 0;
+    public static final int MSG_INTERMEDIATE_RESULT			= 1;
+    public static final int MSG_VOICE_COMMAND           	= 2;
+    public static final int MSG_SPEECH_ERROR            	= 3;
     
-    private static final int VOICE_COMING               = 0;
-    private static final int VOICE_LOCAL_WAKE           = 1;
-    private static final int VOICE_START                = 2;
-    private static final int VOICE_ACCEPT               = 3;
-    private static final int VOICE_REJECT               = 4;
-    private static final int VOICE_CANCEL               = 5;
-    private static final int VOICE_LOCAL_SLEEP       	= 6;
+    private static final int RESULT_TYPE_SOUND_LOCATION		= 0;
+    private static final int RESULT_TYPE_VOICE_ENERGY		= 1;
+    private static final int RESULT_TYPE_ACTIVATION			= 2;
+    private static final int RESULT_TYPE_INTERMEDIATE_ASR	= 3;
+    private static final int RESULT_TYPE_FINISHED_ASR		= 4;
+    private static final int RESULT_TYPE_VOICE_COMMAND		= 5;
+    private static final int RESULT_TYPE_LOCAL_SLEEP		= 6;
+	private static final int RESULT_TYPE_EXCEPTION			= 7;
+    
+    private static final int VOICE_COMING               	= 0;
+    private static final int VOICE_LOCAL_WAKE           	= 1;
+    private static final int VOICE_START                	= 2;
+    private static final int VOICE_ACCEPT               	= 3;
+    private static final int VOICE_REJECT               	= 4;
+    private static final int VOICE_CANCEL               	= 5;
+    private static final int VOICE_LOCAL_SLEEP       		= 6;
+    
+    private static final int TYPE_INTERMEDIATE_ASR       	= 0;
+    private static final int TYPE_FINISHED_ASR       		= 2;
 
-    private static final int SPEECH_SERVER_INTERNAL     = 6;
-    private static final int SPEECH_VAD_TIMEOUT         = 7;
-    private static final int SPEECH_SERVICE_UNAVAILABLE = 101;
-    private static final int SPEECH_TIMEOUT             = 103;
+    private static final int SPEECH_SERVER_INTERNAL     	= 6;
+    private static final int SPEECH_VAD_TIMEOUT         	= 7;
+    private static final int SPEECH_SERVICE_UNAVAILABLE 	= 101;
+    private static final int SPEECH_TIMEOUT             	= 103;
+
+    private Lock lock = new ReentrantLock();
+    private Condition condition = lock.newCondition();
+    private LinkedList<BearKidResult> results = new LinkedList<BearKidResult>();
     
     public Handler mHandler = new Handler(){
     	public void handleMessage(android.os.Message msg) {
@@ -74,81 +98,138 @@ public class VoiceService extends android.app.Service{
 	}
 	
 	private void handleVoiceEvent(int id, int event, double sl, double energy){
-		Intent intent = new Intent("rokid.intent.VoiceEvent");
-		intent.putExtra("id", id);
-		intent.putExtra("event", event);
-		intent.putExtra("sl", sl);
-		intent.putExtra("energy", energy);
-		sendBroadcast(intent);
-//		if(callback != null){
-//			try {
-//				callback.voiceEvent(id, event, sl, energy);
-//			} catch (RemoteException e) {
-//				e.printStackTrace();
-//			}
-//		}
+		BearKidResult newResult = new BearKidResult();
+		switch (event) {
+		case VOICE_COMING:
+			newResult.type = BearKidResult.TYPE_LOCATION;
+			newResult.location = (float)sl;
+			break;
+//		case VOICE_LOCAL_WAKE:
+//			newResult.type = BearKidResult.TYPE_EXCEPTION;
+//			newResult.extype = 0;
+//			break;
+		case VOICE_ACCEPT:
+			newResult.type = BearKidResult.TYPE_ACTIVATION;
+			newResult.activation = 0;
+			break;
+		case VOICE_REJECT:
+			newResult.type = BearKidResult.TYPE_ACTIVATION;
+			newResult.activation = 1;
+			break;
+		case VOICE_CANCEL:
+			newResult.type = BearKidResult.TYPE_EXCEPTION;
+			newResult.extype = 2;
+			break;
+		case VOICE_LOCAL_SLEEP:
+			newResult.type = BearKidResult.TYPE_DEACTIVE;
+			break;
+		default:
+			return;
+		}
+		addToTarget(newResult);
 	}
 	
 	private void handleIntermediateResult(int id, int type, String asr){
-		Intent intent = new Intent("rokid.intent.IntermediateResult");
-		intent.putExtra("id", id);
-		intent.putExtra("type", type);
-		intent.putExtra("asr", asr);
-		sendBroadcast(intent);
-//		if(callback != null){
-//			try {
-//				callback.intermediateResult(id, type, asr);
-//			} catch (RemoteException e) {
-//				e.printStackTrace();
-//			}
-//		}
+		BearKidResult newResult = new BearKidResult();
+		switch (type) {
+		case TYPE_INTERMEDIATE_ASR:
+			newResult.type = BearKidResult.TYPE_INTERMEDIATE;
+			break;
+		case TYPE_FINISHED_ASR:
+			newResult.type = BearKidResult.TYPE_ASR;
+			break;
+		default:
+			return;
+		}
+		newResult.asr = asr;
+		addToTarget(newResult);
 	}
 	
 	private void handleVoiceCommand(int id, String asr, String nlp, String action){
-		Intent intent = new Intent("rokid.intent.VoiceCommand");
-		intent.putExtra("id", id);
-		intent.putExtra("asr", asr);
-		intent.putExtra("nlp", nlp);
-		intent.putExtra("action", action);
-		sendBroadcast(intent);
-//		if(callback != null){
-//			try {
-//				callback.voiceCommand(id, asr, nlp, action);
-//			} catch (RemoteException e) {
-//				e.printStackTrace();
-//			}
-//		}
+		BearKidResult newResult = new BearKidResult();
+		newResult.type = BearKidResult.TYPE_NLP;
+		newResult.nlp = nlp;
+		newResult.action = action;
+		addToTarget(newResult);
 	}
 
 	private void handleSpeechError(int id, int errcode){
-		Intent intent = new Intent("rokid.intent.SpeechError");
-		intent.putExtra("id", id);
-		intent.putExtra("errcode", errcode);
-		sendBroadcast(intent);
-//		if(callback != null){
-//			try {
-//				callback.speechError(id, errcode);
-//			} catch (RemoteException e) {
-//				e.printStackTrace();
+		BearKidResult newResult = new BearKidResult();
+		newResult.type = BearKidResult.TYPE_EXCEPTION;
+		switch (errcode) {
+		case SPEECH_TIMEOUT:
+			newResult.extype = 3;
+			break;
+		default:
+			newResult.extype = 4;
+		}
+		addToTarget(newResult);
+	}
+	
+	private void addToTarget(BearKidResult newResult){
+		lock.lock();
+		try {
+			Iterator<BearKidResult> iterator = results.iterator();
+			while(iterator.hasNext()){
+				BearKidResult result = iterator.next();
+				if(result.type == newResult.type){
+					iterator.remove();
+					break;
+				}
+			}
+			results.addLast(newResult);
+//			Iterator<BearKidResult> iterator2 = results.iterator();
+//			while(iterator2.hasNext()){
+//				BearKidResult result = iterator2.next();
+//				Log.e(TAG, result.toString());
 //			}
-//		}
+//			Log.e(TAG, "\n");
+			condition.signal();
+		} finally{
+			lock.unlock();
+		}
 	}
 
-	private final IVoiceService.Stub voice_service = new IVoiceService.Stub() {
-		
+	private final BearKid.Stub bearKid = new BearKid.Stub(){
+
 		@Override
-		public void startSiren(boolean isopen) throws RemoteException {
-			VoiceManager.startSiren(isopen);
+		public void control(int action) throws RemoteException {
+			switch (action) {
+			case VoiceManager.SIREN_STATE_AWAKE:
+				VoiceManager.setSirenState(VoiceManager.SIREN_STATE_AWAKE);
+				break;
+			case VoiceManager.SIREN_STATE_SLEEP:
+				VoiceManager.setSirenState(VoiceManager.SIREN_STATE_SLEEP);
+				break;
+			case VoiceManager.SIREN_STATE_STOP:
+				VoiceManager.startSiren(false);
+				break;
+			case VoiceManager.SIREN_STATE_START:
+				VoiceManager.startSiren(true);
+				break;
+			}
 		}
-		
+
 		@Override
-		public void setSirenState(int state) throws RemoteException {
-			VoiceManager.setSirenState(state);
+		public int getState() throws RemoteException {
+			return 0;
 		}
-		
+
 		@Override
-		public void registCallback(IVoiceCallback callback) throws RemoteException {
-			VoiceService.this.callback = callback;
+		public BearKidResult poll() throws RemoteException {
+			BearKidResult result = null;
+			lock.lock();
+			try {
+				while (results.isEmpty())
+					condition.await();
+				result = results.getFirst();
+				results.removeFirst();
+			}catch (InterruptedException e) {
+				e.printStackTrace();
+			}finally{
+				lock.unlock();
+			}
+			return result;
 		}
 	};
 	
@@ -168,6 +249,6 @@ public class VoiceService extends android.app.Service{
 	
 	@Override
 	public android.os.IBinder onBind(Intent intent) {
-		return voice_service;
+		return bearKid;
 	}
 }

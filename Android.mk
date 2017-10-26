@@ -8,23 +8,26 @@ $(shell cp $(LOCAL_PATH)/etc/blacksiren.json $(TARGET_OUT_ETC))
 $(shell cp -r $(LOCAL_PATH)/workdir_cn $(TARGET_OUT)/workdir_cn)
 
 include $(CLEAR_VARS)
-
 LOCAL_SRC_FILES := \
 		$(call all-java-files-under, src) \
-		src/com/rokid/openvoice/IVoiceService.aidl \
-		src/com/rokid/openvoice/IVoiceCallback.aidl
-
+		src/com/rokid/tts/ITts.aidl \
+		src/com/rokid/tts/ITtsCallback.aidl \
+		src/com/rokid/voicerec/BearKid.aidl
+#LOCAL_STATIC_JAVA_LIBRARIES := opus_player rokid_speech
 LOCAL_MODULE_TAGS := optional
 LOCAL_CERTIFICATE := platform
 LOCAL_PRIVILEGED_MODULE := true
-#LOCAL_ALLOW_UNDEFINED_SYMBOLS := true
 LOCAL_PROGUARD_ENABLED := disabled
 LOCAL_PACKAGE_NAME := openvoice_process
 include $(BUILD_PACKAGE)
-##########################################################################
-#
-include $(CLEAR_VARS)
 
+include $(CLEAR_VARS)
+LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := \
+		opus_player:libs/opus_player.jar \
+		rokid_speech:libs/rokid_speech.jar 
+#include $(BUILD_MULTI_PREBUILT)
+
+include $(CLEAR_VARS)
 LOCAL_PREBUILT_LIBS := \
 		libopenvoice2:$(SHARED_LIBRARIES_PATH)/libopenvoice2.so \
 		libbsiren:$(SHARED_LIBRARIES_PATH)/libbsiren.so \
@@ -36,22 +39,15 @@ LOCAL_PREBUILT_LIBS := \
 		libr2vt:$(SHARED_LIBRARIES_PATH)/libr2vt.so \
 		libspeech:$(SHARED_LIBRARIES_PATH)/libspeech.so \
 		libztvad:$(SHARED_LIBRARIES_PATH)/libztvad.so \
-#		libcrypto:$(SHARED_LIBRARIES_PATH)/libcrypto.so \
-		libssl:$(SHARED_LIBRARIES_PATH)/libssl.so \
-		libtinyalsa:$(SHARED_LIBRARIES_PATH)/libtinyalsa.so \
-		libz:$(SHARED_LIBRARIES_PATH)/libz.so
-
+		librokid_speech_jni:libs/$(TARGET_CPU_ABI)/librokid_speech_jni.so \
+		librokid_opus_jni:libs/$(TARGET_CPU_ABI)/librokid_opus_jni.so
 include $(BUILD_MULTI_PREBUILT)
 
 include $(CLEAR_VARS)
-
 LOCAL_SRC_FILES := \
 		$(call all-java-files-under, jar) \
-		src/com/rokid/openvoice/IVoiceService.aidl \
-		src/com/rokid/openvoice/IVoiceCallback.aidl
-
+		src/com/rokid/voicerec/BearKidResult.java \
+		src/com/rokid/voicerec/BearKid.aidl
 LOCAL_JACK_ENABLED = disabled
-
-LOCAL_MODULE := rokid_openvoice_sdk
-
+LOCAL_MODULE := BearKidAdapter
 include $(BUILD_STATIC_JAVA_LIBRARY)

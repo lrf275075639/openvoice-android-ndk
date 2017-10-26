@@ -8,8 +8,8 @@ public class VoiceManager{
 
     public static final int SIREN_STATE_AWAKE           = 1;
     public static final int SIREN_STATE_SLEEP           = 2;
-    public static final int SIREN_STATE_START           = 3;
-    public static final int SIREN_STATE_STOP            = 4;
+    public static final int SIREN_STATE_STOP            = 3;
+    public static final int SIREN_STATE_START           = 4;
     
 	public static native boolean init(); 
 	

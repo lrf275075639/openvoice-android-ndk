@@ -13,7 +13,7 @@ LOCAL_SRC_FILES := \
 		src/com/rokid/tts/ITts.aidl \
 		src/com/rokid/tts/ITtsCallback.aidl \
 		src/com/rokid/voicerec/BearKid.aidl
-#LOCAL_STATIC_JAVA_LIBRARIES := opus_player rokid_speech
+LOCAL_STATIC_JAVA_LIBRARIES := opus_player rokid_speech
 LOCAL_MODULE_TAGS := optional
 LOCAL_CERTIFICATE := platform
 LOCAL_PRIVILEGED_MODULE := true
@@ -25,7 +25,7 @@ include $(CLEAR_VARS)
 LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := \
 		opus_player:libs/opus_player.jar \
 		rokid_speech:libs/rokid_speech.jar 
-#include $(BUILD_MULTI_PREBUILT)
+include $(BUILD_MULTI_PREBUILT)
 
 include $(CLEAR_VARS)
 LOCAL_PREBUILT_LIBS := \
@@ -39,7 +39,7 @@ LOCAL_PREBUILT_LIBS := \
 		libr2vt:$(SHARED_LIBRARIES_PATH)/libr2vt.so \
 		libspeech:$(SHARED_LIBRARIES_PATH)/libspeech.so \
 		libztvad:$(SHARED_LIBRARIES_PATH)/libztvad.so \
-#		librokid_speech_jni:libs/$(TARGET_CPU_ABI)/librokid_speech_jni.so \
+		librokid_speech_jni:libs/$(TARGET_CPU_ABI)/librokid_speech_jni.so \
 		librokid_opus_jni:libs/$(TARGET_CPU_ABI)/librokid_opus_jni.so
 include $(BUILD_MULTI_PREBUILT)
 

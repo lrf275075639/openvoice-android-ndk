@@ -39,7 +39,7 @@ LOCAL_PREBUILT_LIBS := \
 		libr2vt:$(SHARED_LIBRARIES_PATH)/libr2vt.so \
 		libspeech:$(SHARED_LIBRARIES_PATH)/libspeech.so \
 		libztvad:$(SHARED_LIBRARIES_PATH)/libztvad.so \
-		librokid_speech_jni:libs/$(TARGET_CPU_ABI)/librokid_speech_jni.so \
+#		librokid_speech_jni:libs/$(TARGET_CPU_ABI)/librokid_speech_jni.so \
 		librokid_opus_jni:libs/$(TARGET_CPU_ABI)/librokid_opus_jni.so
 include $(BUILD_MULTI_PREBUILT)
 

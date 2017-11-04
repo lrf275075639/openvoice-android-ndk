@@ -1,5 +1,5 @@
 SDK_BLACKSIREN := blacksiren/libbsiren/libs/armeabi-v7a
-DEP_LIBRARIES  := support/$(ANDROID_VERSION)
+DEP_LIBRARIES  := thirdlib/$(ANDROID_VERSION)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libbsiren
@@ -33,7 +33,7 @@ include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libssl
-LOCAL_SRC_FILES := $(DEP_LIBRARIES)/libssl.so
+LOCAL_SRC_FILES := thirdlib/$(MY_TARGET_PLATFORM_LEVEL)/libssl.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)

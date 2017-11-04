@@ -53,11 +53,7 @@ public:
 
     void start(jobject jobj){
         this->jobj = jobj;
-        std::lock_guard<std::mutex> lock(g_i_mutex);
-        if(!started){
-            started = true;
-            pthread_create(&thread, NULL, [](void *token)->void*{return ((Handle *)token)->thread_loop();}, this);
-        }
+        std::call_once(start_flag, [&]{pthread_create(&thread, NULL, [](void *token)->void*{return ((Handle *)token)->thread_loop();}, this);});
     }
 
     class Message{
@@ -177,8 +173,7 @@ private:
     JNIEnv *_env;
     jobject jobj;
 
-    std::mutex g_i_mutex;
-    bool started = false;
+    std::once_flag start_flag;
 };
 
 shared_ptr<Handle> handle;

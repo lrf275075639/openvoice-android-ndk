@@ -38,7 +38,7 @@ include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libcrypto
-LOCAL_SRC_FILES := $(DEP_LIBRARIES)/libcrypto.so
+LOCAL_SRC_FILES := thirdlib/$(MY_TARGET_PLATFORM_LEVEL)/libcrypto.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)

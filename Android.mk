@@ -32,7 +32,7 @@ LOCAL_PREBUILT_LIBS := \
 		libopenvoice2:$(SHARED_LIBRARIES_PATH)/libopenvoice2.so \
 		libbsiren:$(SHARED_LIBRARIES_PATH)/libbsiren.so \
 		libopenvoice:$(SHARED_LIBRARIES_PATH)/libopenvoice.so \
-		libpoco:$(SHARED_LIBRARIES_PATH)/libpoco.so \
+		libpoco:libs/$(PLATFORM_SDK_VERSION)/$(TARGET_CPU_ABI)/libpoco.so \
 		libprotobuf-rokid-cpp-full:$(SHARED_LIBRARIES_PATH)/libprotobuf-rokid-cpp-full.so \
 		libr2mvdrbf:$(SHARED_LIBRARIES_PATH)/libr2mvdrbf.so \
 		libr2ssp:$(SHARED_LIBRARIES_PATH)/libr2ssp.so \

@@ -6,6 +6,7 @@ ifndef ROKID_BLACKSIREN_CONFIG
 ROKID_BLACKSIREN_CONFIG := default
 endif
 
+$(shell mkdir -p $(TARGET_OUT_ETC))
 $(shell cp $(LOCAL_PATH)/etc/openvoice_profile.json $(TARGET_OUT_ETC))
 $(shell cp $(LOCAL_PATH)/etc/blacksiren_$(ROKID_BLACKSIREN_CONFIG).json $(TARGET_OUT_ETC)/blacksiren.json)
 $(shell cp -r $(LOCAL_PATH)/workdir_cn $(TARGET_OUT)/workdir_cn)

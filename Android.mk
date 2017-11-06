@@ -2,9 +2,12 @@ LOCAL_PATH:= $(call my-dir)
 
 SDK_VERSION = $(shell if [ $(PLATFORM_SDK_VERSION) -ge 21 ]; then echo 23; else echo 19; fi)
 SHARED_LIBRARIES_PATH := libs/$(SDK_VERSION)/$(TARGET_CPU_ABI)
+ifndef ROKID_BLACKSIREN_CONFIG
+ROKID_BLACKSIREN_CONFIG := default
+endif
 
 $(shell cp $(LOCAL_PATH)/etc/openvoice_profile.json $(TARGET_OUT_ETC))
-$(shell cp $(LOCAL_PATH)/etc/blacksiren.json $(TARGET_OUT_ETC))
+$(shell cp $(LOCAL_PATH)/etc/blacksiren_$(ROKID_BLACKSIREN_CONFIG).json $(TARGET_OUT_ETC)/blacksiren.json)
 $(shell cp -r $(LOCAL_PATH)/workdir_cn $(TARGET_OUT)/workdir_cn)
 
 include $(CLEAR_VARS)

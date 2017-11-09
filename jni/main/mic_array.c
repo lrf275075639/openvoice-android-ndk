@@ -26,8 +26,8 @@
 #include <asoundlib.h>
 
 #define MIC_SAMPLE_RATE 48000
-#define MIC_CHANNEL 16
-#define FRAME_COUNT 15360 * 2
+#define MIC_CHANNEL 8
+#define FRAME_COUNT MIC_SAMPLE_RATE / 100 * MIC_CHANNEL * 4
 
 #define PCM_CARD 0
 #define PCM_DEVICE 0

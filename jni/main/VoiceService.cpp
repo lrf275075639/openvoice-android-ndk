@@ -4,106 +4,117 @@
 #include "VoiceService.h"
 #include "audio_recorder.h"
 
-VoiceService::VoiceService() {
-	pthread_mutex_init(&event_mutex, NULL);
-	pthread_mutex_init(&speech_mutex, NULL);
-	pthread_mutex_init(&siren_mutex, NULL);
-    pthread_mutex_init(&session_mutex, NULL);
-	pthread_cond_init(&event_cond, NULL);
+#ifdef USB_AUDIO_DEVICE
+#warning "=============================USB_AUDIO_DEVICE==============================="
+#endif
 
+VoiceService::VoiceService() {
     _voice_config = make_shared<VoiceConfig>();
-	_callback = make_shared<VoiceCallback>();
+    _callback = make_shared<VoiceCallback>();
     _speech = Speech::new_instance();
     clear();
 }
 
 bool VoiceService::init() {
-	pthread_mutex_lock(&siren_mutex);
-	if (mCurrentSirenState == SIREN_STATE_UNKNOWN) {
-		if (!setup(this,
-				[](void *token, voice_event_t *event) {((VoiceService*)token)->voice_event_callback(event);})) {
-			LOGE("init siren failed.");
-			pthread_mutex_unlock(&siren_mutex);
-			return false;
-		}
-	} else {
-		goto done;
-	}
-	mCurrentSirenState = SIREN_STATE_INITED;
-	pthread_create(&event_thread, NULL,
-			[](void* token)->void* {return ((VoiceService*)token)->onEvent();},
-			this);
-done: 
-    pthread_mutex_unlock(&siren_mutex);
-	return true;
+    std::lock_guard<std::mutex> lg(siren_mutex);
+    if (mCurrentSirenState == SIREN_STATE_UNKNOWN) {
+        if (!setup(this, [](void *token, voice_event_t *event) {((VoiceService*)token)->voice_event_callback(event);})) {
+            LOGE("init siren failed.");
+            return false;
+        }
+    } else {
+        goto done;
+    }
+    mCurrentSirenState = SIREN_STATE_INITED;
+    std::call_once(start_flag, [this]{event_thread = std::thread(&VoiceService::onEvent, this);});
+done:
+    return true;
 }
 
 void VoiceService::start_siren(const bool isopen) {
-	LOGV("%s \t isopen : %d \t mCurrState : %d \t opensiren : %d",
-			__FUNCTION__, isopen, mCurrentSirenState, openSiren);
-
-	pthread_mutex_lock(&siren_mutex);
-	if (isopen && (mCurrentSirenState == SIREN_STATE_INITED
-				|| mCurrentSirenState == SIREN_STATE_STOPED)) {
-		openSiren = true;
-		_start_siren_process_stream();
-		mCurrentSirenState = SIREN_STATE_STARTED;
-
-	} else if (!isopen && mCurrentSirenState == SIREN_STATE_STARTED) {
-		_stop_siren_process_stream();
-		mCurrentSirenState = SIREN_STATE_STOPED;
-	}
-	if (!isopen && mCurrentSirenState != SIREN_STATE_UNKNOWN) openSiren = false;
-	pthread_mutex_unlock(&siren_mutex);
+    LOGV("%s \t isopen : %d \t mCurrState : %d \t opensiren : %d",
+         __FUNCTION__, isopen, mCurrentSirenState, openSiren);
+    
+    std::lock_guard<std::mutex> lg(siren_mutex);
+    if (isopen && (mCurrentSirenState == SIREN_STATE_INITED
+                   || mCurrentSirenState == SIREN_STATE_STOPED)) {
+        openSiren = true;
+#ifdef USB_AUDIO_DEVICE
+        if(wait_for_alsa_usb_card()){
+#endif
+            _start_siren_process_stream();
+            mCurrentSirenState = SIREN_STATE_STARTED;
+#ifdef USB_AUDIO_DEVICE
+        }
+#endif
+    } else if (!isopen && mCurrentSirenState == SIREN_STATE_STARTED) {
+        _stop_siren_process_stream();
+        mCurrentSirenState = SIREN_STATE_STOPED;
+    }
+    if (!isopen && mCurrentSirenState != SIREN_STATE_UNKNOWN) openSiren = false;
 }
 
 void VoiceService::set_siren_state(const int32_t state) {
-	set_siren_state_change(state);
-	LOGV("current_status     >>   %d", state);
+    set_siren_state_change(state);
+    LOGV("current_status     >>   %d", state);
 }
 
+#ifdef USB_AUDIO_DEVICE
+bool VoiceService::wait_for_alsa_usb_card(){
+    int index = 0;
+    while (index++ < 3) {
+        if(find_card("USB-Audio") >= 0) {
+            return true;
+        }
+        usleep(1000 * 100);
+    }
+    return false;
+}
+#endif
+
 void VoiceService::network_state_change(const bool connected) {
-	LOGV("network_state_change      isconnect  <<%d>>", connected);
-	pthread_mutex_lock(&speech_mutex);
-	if (connected && mCurrentSpeechState != SPEECH_STATE_PREPARED) {
+    LOGV("network_state_change      isconnect  <<%d>>", connected);
+    std::lock_guard<std::mutex> lg(speech_mutex);
+    if (connected && mCurrentSpeechState != SPEECH_STATE_PREPARED) {
         if(_voice_config->prepare(_speech)){
             clear();
-			mCurrentSpeechState = SPEECH_STATE_PREPARED;
-			pthread_create(&response_thread, NULL,
-					[](void* token)->void* {return ((VoiceService*)token)->onResponse();},
-					this);
-			pthread_detach(response_thread);
-
-			pthread_mutex_lock(&siren_mutex);
-			if (openSiren && (mCurrentSirenState == SIREN_STATE_INITED
-							|| mCurrentSirenState == SIREN_STATE_STOPED)) {
-				_start_siren_process_stream();
-				mCurrentSirenState = SIREN_STATE_STARTED;
-			}
-			pthread_mutex_unlock(&siren_mutex);
-		}
-	} else if (!connected && mCurrentSpeechState == SPEECH_STATE_PREPARED) {
-		pthread_mutex_lock(&siren_mutex);
-		if (mCurrentSirenState == SIREN_STATE_STARTED) {
-			_stop_siren_process_stream();
-			mCurrentSirenState = SIREN_STATE_STOPED;
-		}
-		pthread_mutex_unlock(&siren_mutex);
-		LOGV("==========================BEGIN============================");
-		_speech->release();
-		LOGV("===========================END==============================");
-		mCurrentSpeechState = SPEECH_STATE_RELEASED;
-	}
-	pthread_mutex_unlock(&speech_mutex);
+            mCurrentSpeechState = SPEECH_STATE_PREPARED;
+            response_thread = std::thread(&VoiceService::onResponse, this);
+            response_thread.detach();
+            
+            std::lock_guard<std::mutex> lg(siren_mutex);
+            if (openSiren && (mCurrentSirenState == SIREN_STATE_INITED
+                              || mCurrentSirenState == SIREN_STATE_STOPED)) {
+#ifdef USB_AUDIO_DEVICE
+                if(wait_for_alsa_usb_card()){
+#endif
+                    _start_siren_process_stream();
+                    mCurrentSirenState = SIREN_STATE_STARTED;
+#ifdef USB_AUDIO_DEVICE
+                }
+#endif
+            }
+        }
+    } else if (!connected && mCurrentSpeechState == SPEECH_STATE_PREPARED) {
+        std::lock_guard<std::mutex> lg(siren_mutex);
+        if (mCurrentSirenState == SIREN_STATE_STARTED) {
+            _stop_siren_process_stream();
+            mCurrentSirenState = SIREN_STATE_STOPED;
+        }
+        LOGV("==========================BEGIN============================");
+        _speech->release();
+        LOGV("===========================END=============================");
+        mCurrentSpeechState = SPEECH_STATE_RELEASED;
+    }
 }
 
 void VoiceService::update_stack(const string &appid) {
-	this->appid = appid;
-	LOGE("%s  %s", __FUNCTION__, this->appid.c_str());
+    this->appid = appid;
+    LOGE("%s  %s", __FUNCTION__, this->appid.c_str());
 }
 
 void VoiceService::update_config(const string& device_id, const string& device_type_id,
-                                const string& key, const string& secret) {
+                                 const string& key, const string& secret) {
     if(!_voice_config->save_config(device_id, device_type_id, key, secret)){
     }
 }
@@ -119,24 +130,24 @@ int32_t VoiceService::vad_start() {
             has_vt = false;
         }
         options.stack = appid;
-//        options.skill_options = _callback->get_skill_options();
+        //        options.skill_options = _callback->get_skill_options();
         return _speech->start_voice(&options);
     }
     return -1;
 }
 
 void VoiceService::voice_print(const voice_event_t *voice_event) {
-	if (voice_event && HAS_VT(voice_event->flag)) {
-		vt_start = voice_event->vt.start;
-		vt_end = voice_event->vt.end;
-		vt_energy = voice_event->vt.energy;
-		vt_word = (char*) voice_event->buff;
-		has_vt = true;
-	}
+    if (voice_event && HAS_VT(voice_event->flag)) {
+        vt_start = voice_event->vt.start;
+        vt_end = voice_event->vt.end;
+        vt_energy = voice_event->vt.energy;
+        vt_word = (char*) voice_event->buff;
+        has_vt = true;
+    }
 }
 
 void VoiceService::voice_event_callback(voice_event_t *voice_event) {
-	pthread_mutex_lock(&event_mutex);
+    std::lock_guard<std::mutex> lg(event_mutex);
     int32_t len =  0;
     char *buff = nullptr;
     if(voice_event->length > 0){
@@ -149,27 +160,23 @@ void VoiceService::voice_event_callback(voice_event_t *voice_event) {
     memcpy(_event_t, voice_event, sizeof(voice_event_t));
     
     if ((HAS_VOICE(_event_t->flag) || HAS_VT(_event_t->flag)) && len) {
-    	memcpy(buff, voice_event->buff, len);
-    	_event_t->buff = buff;
+        memcpy(buff, voice_event->buff, len);
+        _event_t->buff = buff;
     }
     _events.push_back(_event_t);
-    pthread_cond_signal(&event_cond);
-    pthread_mutex_unlock(&event_mutex);
+    event_cond.notify_one();
 }
 
-void* VoiceService::onEvent() {
-	prctl(PR_SET_NAME, __FUNCTION__);
+void VoiceService::onEvent() {
+    prctl(PR_SET_NAME, __FUNCTION__);
+    std::unique_lock<std::mutex> lk(event_mutex, std::defer_lock);
     while(true){
-        pthread_mutex_lock(&event_mutex);
-        while(_events.empty()) {
-            pthread_cond_wait(&event_cond, &event_mutex);
-        }
+        lk.lock();
+        event_cond.wait(lk, [this]{return !_events.empty();});
         voice_event_t *_event = _events.front();
         _events.pop_front();
-        pthread_mutex_unlock(&event_mutex);
-
+        lk.unlock();
         LOGV("event : -------------------------%d----", _event->event);
-
         switch(_event->event) {
             case SIREN_EVENT_WAKE_PRE:
                 _callback->voice_event(-1, VoiceEvent::VOICE_COMING, _event->sl);
@@ -211,23 +218,22 @@ void* VoiceService::onEvent() {
                 _callback->voice_event(session_id, VoiceEvent::VOICE_LOCAL_SLEEP);
                 break;
         }
-		delete[] (char *)_event;
+        delete[] (char *)_event;
     }
-	_speech->release();
-	_speech.reset();
-	return NULL;
+    _speech->release();
+    _speech.reset();
 }
 
-void* VoiceService::onResponse() {
-	prctl(PR_SET_NAME, __FUNCTION__);
-	auto arbitration = [](const string& activation)->bool {return ("fake" == activation || "reject" == activation);};
-	SpeechResult sr;
+void VoiceService::onResponse() {
+    prctl(PR_SET_NAME, __FUNCTION__);
+    auto arbitration = [](const string& activation)->bool {return ("fake" == activation || "reject" == activation);};
+    SpeechResult sr;
     string activation, asr;
-	json_object *nlp_obj, *activation_obj;
-	while (true) {
-		if (!_speech->poll(sr)) {
-			break;
-		}
+    json_object *nlp_obj, *activation_obj;
+    while (true) {
+        if (!_speech->poll(sr)) {
+            break;
+        }
         LOGV("result : id \t %d \t \t type \t %d \t err \t %d", sr.id, sr.type, sr.err);
         if(sr.type == SPEECH_RES_START) {
             asr_finished = false;
@@ -253,7 +259,7 @@ void* VoiceService::onResponse() {
                         set_siren_state(SIREN_STATE_SLEEP);
                         asr_finished = true;
                     }
-                  asr = sr.asr;
+                    asr = sr.asr;
                 }
             }else if(sr.type == SPEECH_RES_END) {
                 LOGV("result : nlp\t%s", sr.nlp.c_str());
@@ -272,7 +278,6 @@ void* VoiceService::onResponse() {
             }
         }
         if(sr.type >= SPEECH_RES_END) clear(sr.id);
-	}
-	LOGV("exit !!");
-	return NULL;
+    }
+    LOGV("exit !!");
 }

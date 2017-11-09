@@ -19,7 +19,7 @@ private:
     std::string _key;
     std::string _secret;
     std::string _vad_mode;
-
+    
     static Lang lang_str2i(const char* str) {
         if (strcmp(str, "en") == 0)
             return Lang::EN;
@@ -32,35 +32,35 @@ private:
         // speech not support "opu2"
         return Codec::PCM;
     }
-
+    
     static VadMode vadmode_str2i(const char* str) {
         if (strcmp(str, "cloud") == 0)
             return VadMode::CLOUD;
         return VadMode::LOCAL;
     }
-
+    
 public:
     bool prepare(shared_ptr<Speech> _speech){
-
+        
         json_object *json_obj = json_object_from_file(OPENVOICE_PREFILE);
-    
+        
         if(json_obj == NULL) {
             LOGE("%s cannot find", OPENVOICE_PREFILE);
             return false;
         }
         PrepareOptions preopts;
         shared_ptr<SpeechOptions> spopts = SpeechOptions::new_instance();
-
-        json_object *host, *port, *branch, *auth_key, *device_type_id, *device_id, 
-                                *secret, *lang, *codec, *vad_mode, *vend_timeout;
-    
+        
+        json_object *host, *port, *branch, *auth_key, *device_type_id, *device_id,
+        *secret, *lang, *codec, *vad_mode, *vend_timeout;
+        
         if(TRUE == json_object_object_get_ex(json_obj, "host", &host))
             preopts.host = json_object_get_string(host);
         if(TRUE == json_object_object_get_ex(json_obj, "port", &port))
             preopts.port = json_object_get_int(port);
         if(TRUE == json_object_object_get_ex(json_obj, "branch", &branch))
             preopts.branch = json_object_get_string(branch);
-
+        
         if(_key.empty()){
             if(TRUE == json_object_object_get_ex(json_obj, "key", &auth_key))
                 preopts.key = json_object_get_string(auth_key);
@@ -85,7 +85,7 @@ public:
         }else{
             preopts.secret = _secret;
         }
-
+        
         if(TRUE == json_object_object_get_ex(json_obj, "lang", &lang))
             spopts->set_lang(lang_str2i(json_object_get_string(lang)));
         if(TRUE == json_object_object_get_ex(json_obj, "codec", &codec))
@@ -103,18 +103,18 @@ public:
     }
     
     bool save_config(const std::string& device_id, const std::string& device_type_id,
-                                        const std::string& key, const std::string& secret) {
-
-        LOGI("dev_id = %s dev_t_id = %s key = %s secret = %s", device_id.c_str(), 
-                device_type_id.c_str(), key.c_str(), secret.c_str());
-    
+                     const std::string& key, const std::string& secret) {
+        
+        LOGI("dev_id = %s dev_t_id = %s key = %s secret = %s", device_id.c_str(),
+             device_type_id.c_str(), key.c_str(), secret.c_str());
+        
         if (_device_id.empty() && !device_id.empty()) _device_id = device_id;
         if (_device_type_id.empty() && !device_type_id.empty()) _device_type_id = device_type_id;
         if (_key.empty() && !key.empty()) _key = key;
         if (_secret.empty() && !secret.empty()) _secret = secret;
         return true;
     }
-
+    
     bool cloud_vad_enable(){
         if (_vad_mode == "cloud")
             return true;

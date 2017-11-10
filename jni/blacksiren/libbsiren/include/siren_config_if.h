@@ -54,6 +54,7 @@ struct MicPos {
 #define KEY_ALG_RAW_STREAM_BF "alg_raw_stream_bf"
 #define KEY_ALG_RAW_STREAM_AGC "alg_raw_stream_agc"
 
+#define KEY_ALG_RS_ENABLE "alg_rs_enable"
 #define KEY_ALG_VT_ENABLE "alg_vt_enable"
 #define KEY_ALG_VAD_ENABLE "alg_vad_enable"
 
@@ -152,6 +153,7 @@ struct AlgConfig {
     bool alg_rs_delay_on_left_right_channel;
     bool alg_raw_stream_bf = true;
     bool alg_raw_stream_agc = true;
+    bool alg_rs_enable = true;
     bool alg_vt_enable = true;
     bool alg_vad_enable = true;
     bool alg_opus_compress = false;

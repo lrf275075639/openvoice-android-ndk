@@ -99,6 +99,7 @@ config_error_t SirenConfigurationManager::loadConfigFromJSON(std::string &conten
     json_object *alg_raw_stream_bf_object = nullptr;
     json_object *alg_raw_stream_agc_object = nullptr;
 
+    json_object *alg_rs_enable_object = nullptr;
     json_object *alg_vt_enable_object = nullptr;
     json_object *alg_vad_enable_object = nullptr;
 
@@ -617,6 +618,21 @@ config_error_t SirenConfigurationManager::loadConfigFromJSON(std::string &conten
         }
     } else {
         siren_printf(SIREN_WARNING, "cannot find key %s", KEY_ALG_RAW_STREAM_AGC);
+        goto fail;
+    }
+    
+    if (TRUE == json_object_object_get_ex(alg_config, KEY_ALG_RS_ENABLE, &alg_rs_enable_object)) {
+        if ((type = json_object_get_type(alg_rs_enable_object)) == json_type_boolean) {
+            siren_config.alg_config.alg_rs_enable = json_object_get_boolean(alg_rs_enable_object);
+            siren_printf(SIREN_INFO, "enable rs %d", siren_config.alg_config.alg_rs_enable);
+            //            json_object_put(alg_vt_enable_object);
+        } else {
+            siren_printf(SIREN_WARNING, "expect type boolean with key %s", KEY_ALG_RS_ENABLE);
+            //            json_object_put(alg_vt_enable_object);
+            goto fail;
+        }
+    } else {
+        siren_printf(SIREN_WARNING, "cannot find key %s", KEY_ALG_RS_ENABLE);
         goto fail;
     }
 

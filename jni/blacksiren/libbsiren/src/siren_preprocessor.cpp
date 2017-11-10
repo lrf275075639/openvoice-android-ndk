@@ -122,7 +122,9 @@ int SirenPreprocessorImpl::init() {
     //now init unit
 
     r2_in_type in_type;
-    if (config.mic_audio_byte == 3) {
+    if(config.mic_audio_byte == 2){
+        in_type = r2_in_int_16;
+    }else if (config.mic_audio_byte == 3) {
         in_type = r2_in_int_24;
     } else if (config.mic_num == 10 && config.mic_audio_byte == 4) {
         in_type = r2_in_int_32_10;
@@ -132,12 +134,15 @@ int SirenPreprocessorImpl::init() {
         siren_printf(SIREN_ERROR, "not support such input");
         return -1;
     }
-
     unit.m_pMem_in = new r2mem_i(config.mic_num, in_type, micinfo.m_pMicInfo_in);
-    unit.m_pMem_rs = new r2mem_rs2(config.mic_num, config.mic_sample_rate, micinfo.m_pMicInfo_rs, false);
-    unit.m_pMem_rdc = new r2mem_rdc(micinfo.m_pMicInfo_aec, micinfo.m_pMicInfo_aec_ref, 16000);
-    unit.m_pMem_aec = new r2mem_aec(config.mic_num, micinfo.m_pMicInfo_aec, micinfo.m_pMicInfo_aec_ref, micinfo.m_pCpuInfo_aec);
-    unit.m_pMem_out = new r2mem_o(config.mic_num, r2_out_float_32, micinfo.m_pMicInfo_aec);
+    if(config.alg_config.alg_rs_enable){
+        unit.m_pMem_rs = new r2mem_rs2(config.mic_num, config.mic_sample_rate, micinfo.m_pMicInfo_rs, false);
+    }
+    unit.m_pMem_rdc = new r2mem_rdc(micinfo.m_pMicInfo_rs, nullptr, 16000);
+    if(doAEC) {
+        unit.m_pMem_aec = new r2mem_aec(config.mic_num, micinfo.m_pMicInfo_aec, micinfo.m_pMicInfo_aec_ref, micinfo.m_pCpuInfo_aec);
+    }
+    unit.m_pMem_out = new r2mem_o(config.mic_num, r2_out_float_32, micinfo.m_pMicInfo_rs);
     unit.m_pMem_buff = new r2mem_buff();
 
     debugStream.open("/data/blacksiren/debug1.pcm", std::ios::out | std::ios::binary);
@@ -155,20 +160,18 @@ int SirenPreprocessorImpl::processData(char *pDataIn, int lenIn, char *& pData_o
     int inLen_mul = 0;
 
     unit.m_pMem_in->process(pDataIn, lenIn, pData_mul, inLen_mul);
-
-    unit.m_pMem_rs->process(pData_mul, inLen_mul, pData_mul, inLen_mul);
-
-    unit.m_pMem_rdc->process(pData_mul, inLen_mul);
-
-    if (rsRecord) {
-        for (int i = 0; i < (int)config.alg_config.alg_rs_mics.size(); i++) {
-            for (int k = 0; k < inLen_mul; k++) {
-                datatmp = pData_mul[i][k] / 32768.0f;
-                rsRecordingStream[i].write((char *)&datatmp, sizeof(float));
+    if(config.alg_config.alg_rs_enable){
+        unit.m_pMem_rs->process(pData_mul, inLen_mul, pData_mul, inLen_mul);
+        if (rsRecord) {
+            for (int i = 0; i < (int)config.alg_config.alg_rs_mics.size(); i++) {
+                for (int k = 0; k < inLen_mul; k++) {
+                    datatmp = pData_mul[i][k] / 32768.0f;
+                    rsRecordingStream[i].write((char *)&datatmp, sizeof(float));
+                }
             }
         }
     }
-    
+    unit.m_pMem_rdc->process(pData_mul, inLen_mul);
     int rt = 0;
     if (doAEC) {
         rt = unit.m_pMem_aec->process(pData_mul, inLen_mul, pData_mul, inLen_mul);
@@ -264,11 +267,14 @@ void SirenPreprocessorImpl::destroy() {
     }
 
     delete unit.m_pMem_in;
-    delete unit.m_pMem_rs;
-    delete unit.m_pMem_aec;
+    if(config.alg_config.alg_rs_enable){
+        delete unit.m_pMem_rs;
+    }
+    delete unit.m_pMem_rdc;
+    if(doAEC) delete unit.m_pMem_aec;
     delete unit.m_pMem_buff;
     delete unit.m_pMem_out;
-    delete unit.m_pMem_rdc;
+
 
     r2ssp_ssp_exit();
 }

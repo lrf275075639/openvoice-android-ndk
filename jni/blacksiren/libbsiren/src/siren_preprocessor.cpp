@@ -123,12 +123,14 @@ int SirenPreprocessorImpl::init() {
 
     r2_in_type in_type;
     if(config.mic_audio_byte == 2){
-        in_type = r2_in_int_16;
-    }else if (config.mic_audio_byte == 3) {
+        iByteWidth = 2;
+        m_pData = new int[config.mic_sample_rate / 100 * config.mic_num * 4];
+    }
+    if (config.mic_audio_byte == 3) {
         in_type = r2_in_int_24;
     } else if (config.mic_num == 10 && config.mic_audio_byte == 4) {
         in_type = r2_in_int_32_10;
-    } else if (config.mic_audio_byte == 4) {
+    } else if (config.mic_audio_byte == 4 || config.mic_audio_byte == 2) {
         in_type = r2_in_int_32;
     } else {
         siren_printf(SIREN_ERROR, "not support such input");
@@ -158,7 +160,16 @@ int SirenPreprocessorImpl::processData(char *pDataIn, int lenIn, char *& pData_o
 
     float** pData_mul = nullptr;
     int inLen_mul = 0;
-
+    if(iByteWidth == 2){
+        short* temp = (short *)pDataIn;
+        for (int i = 0; i < lenIn / 2; i++) {
+            m_pData[i] = temp[i];
+            m_pData[i] <<= 16;
+        }
+        pDataIn = (char *)m_pData;
+        lenIn *= 2;
+        debugStream.write(pDataIn, lenIn);
+    }
     unit.m_pMem_in->process(pDataIn, lenIn, pData_mul, inLen_mul);
     if(config.alg_config.alg_rs_enable){
         unit.m_pMem_rs->process(pData_mul, inLen_mul, pData_mul, inLen_mul);

@@ -286,6 +286,7 @@ void SirenPreprocessorImpl::destroy() {
     delete unit.m_pMem_buff;
     delete unit.m_pMem_out;
 
+    if(iByteWidth == 2) delete m_pData;
 
     r2ssp_ssp_exit();
 }

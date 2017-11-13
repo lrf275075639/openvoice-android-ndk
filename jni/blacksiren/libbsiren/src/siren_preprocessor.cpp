@@ -168,7 +168,7 @@ int SirenPreprocessorImpl::processData(char *pDataIn, int lenIn, char *& pData_o
         }
         pDataIn = (char *)m_pData;
         lenIn *= 2;
-        debugStream.write(pDataIn, lenIn);
+//        debugStream.write(pDataIn, lenIn);
     }
     unit.m_pMem_in->process(pDataIn, lenIn, pData_mul, inLen_mul);
     if(config.alg_config.alg_rs_enable){

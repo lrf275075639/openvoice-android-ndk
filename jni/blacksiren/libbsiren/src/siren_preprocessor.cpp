@@ -60,28 +60,22 @@ int SirenPreprocessorImpl::init() {
         siren_printf(SIREN_INFO, "no rs is need");
     }
 
-    if (config.alg_config.alg_aec) {
-        micinfo.m_pMicInfo_aec = new r2_mic_info;
-        micinfo.m_pMicInfo_aec->iMicNum = config.alg_config.alg_aec_mics.size();
-        if (micinfo.m_pMicInfo_aec->iMicNum > 0) {
-            micinfo.m_pMicInfo_aec->pMicIdLst = new int[config.alg_config.alg_aec_mics.size()];
-            siren_printf(SIREN_INFO, "aec use:");
-            for (int i = 0; i < (int)config.alg_config.alg_aec_mics.size(); i++) {
-                micinfo.m_pMicInfo_aec->pMicIdLst[i] = config.alg_config.alg_aec_mics[i];
-                siren_printf(SIREN_INFO, "mic%d", config.alg_config.alg_aec_mics[i]);
-            }
-            doAEC = true;
-        } else {
-            doAEC = false;
-            micinfo.m_pMicInfo_rs->pMicIdLst = nullptr;
-            delete micinfo.m_pMicInfo_aec;
-            micinfo.m_pMicInfo_aec = nullptr;
-            siren_printf(SIREN_INFO, "no aec is need");
+    micinfo.m_pMicInfo_aec = new r2_mic_info;
+    micinfo.m_pMicInfo_aec->iMicNum = config.alg_config.alg_aec_mics.size();
+    if (micinfo.m_pMicInfo_aec->iMicNum > 0) {
+        micinfo.m_pMicInfo_aec->pMicIdLst = new int[config.alg_config.alg_aec_mics.size()];
+        siren_printf(SIREN_INFO, "aec use:");
+        for (int i = 0; i < (int)config.alg_config.alg_aec_mics.size(); i++) {
+            micinfo.m_pMicInfo_aec->pMicIdLst[i] = config.alg_config.alg_aec_mics[i];
+            siren_printf(SIREN_INFO, "mic%d", config.alg_config.alg_aec_mics[i]);
         }
+        if (config.alg_config.alg_aec) doAEC = true;
     } else {
         doAEC = false;
+        micinfo.m_pMicInfo_rs->pMicIdLst = nullptr;
+        delete micinfo.m_pMicInfo_aec;
         micinfo.m_pMicInfo_aec = nullptr;
-        siren_printf(SIREN_INFO, "disable aec");
+        siren_printf(SIREN_INFO, "no aec is need");
     }
 
     if (doAEC) {
@@ -144,7 +138,7 @@ int SirenPreprocessorImpl::init() {
     if(doAEC) {
         unit.m_pMem_aec = new r2mem_aec(config.mic_num, micinfo.m_pMicInfo_aec, micinfo.m_pMicInfo_aec_ref, micinfo.m_pCpuInfo_aec);
     }
-    unit.m_pMem_out = new r2mem_o(config.mic_num, r2_out_float_32, micinfo.m_pMicInfo_rs);
+    unit.m_pMem_out = new r2mem_o(config.mic_num, r2_out_float_32, micinfo.m_pMicInfo_aec);
     unit.m_pMem_buff = new r2mem_buff();
 
     debugStream.open("/data/blacksiren/debug1.pcm", std::ios::out | std::ios::binary);

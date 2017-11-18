@@ -51,13 +51,16 @@ public class MainActivity extends Activity implements OnClickListener {
 			VoiceManager.setSirenState(mCurrentState);
 			break;
 		case R.id.update_config:
-			
+			VoiceManager.updateConfig("device_id", "device_type_id", "key", "secret");
+			VoiceManager.updateConfig(null, null, null, null);
 			break;
 		case R.id.network_state_change:
 			VoiceManager.networkStateChange(network_connect);
 			network_connect = !network_connect;
 			break;
 		case R.id.update_stack:
+			VoiceManager.updateStack("curr_appid:prev_appid");
+			VoiceManager.updateStack(null);
 			break;
 		case R.id.add_vt_word:
 			Log.e(TAG, "add vt word result : " + VoiceManager.addVTWord(new VTWord(1, "大傻逼", "da4sha3bi1")));

@@ -48,7 +48,7 @@ public class VoiceManager {
 		public VTWord() {
 
 		}
-
+		
 		public VTWord(int vt_type, String vt_word, String vt_pinyin) {
 			this.vt_type = vt_type;
 			this.vt_word = vt_word;

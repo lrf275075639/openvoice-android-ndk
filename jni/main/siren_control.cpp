@@ -48,8 +48,7 @@ int delete_vt_word(const std::string& vt_word){
 
 int query_vt_word(std::vector<siren_vt_word>& _vt_words_in){
     siren_vt_word *_vt_words_out = nullptr;
-    int32_t count = 0; //= get_vt_word(_siren, &_vt_words_out);
-    ALOGE("-----------------------------------------------------------------%d--", count);
+    int32_t count = get_vt_word(_siren, &_vt_words_out);
     if(count > 0 && _vt_words_out != nullptr){
         _vt_words_in.reserve(count);
         for(int i = 0; i < count; i++){

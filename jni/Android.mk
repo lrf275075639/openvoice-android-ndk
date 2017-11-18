@@ -5,20 +5,20 @@ include $(call all-subdir-makefiles)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := \
-		main/siren_control.cpp \
-		main/mic_array.c \
+        main/siren_control.cpp \
+        main/mic_array.c \
         main/VoiceService.cpp \
         main/VoiceCallback.cpp
-    
+
 LOCAL_SHARED_LIBRARIES := \
         libbsiren \
-		libtinyalsa \
+        libtinyalsa \
         libspeech
 
 LOCAL_C_INCLUDES := \
-		$(LOCAL_PATH)/include \
-		$(LOCAL_PATH)/blacksiren/libbsiren/include \
-		$(LOCAL_PATH)/blacksiren/libjsonc/include
+        $(LOCAL_PATH)/include \
+        $(LOCAL_PATH)/blacksiren/libbsiren/include \
+        $(LOCAL_PATH)/blacksiren/libjsonc/include
 
 LOCAL_LDLIBS := -llog #-lOpenSLES
 LOCAL_CPPFLAGS += -std=c++11
@@ -30,9 +30,9 @@ include $(BUILD_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_MODULE := libopenvoice2
 LOCAL_SRC_FILES := main/com_rokid_openvoice_VoiceManager.cpp
-        
+
 LOCAL_LDLIBS := -llog
 LOCAL_SHARED_LIBRARIES := libopenvoice libbsiren
 LOCAL_CPPFLAGS += -std=c++11
-   
+
 include $(BUILD_SHARED_LIBRARY)

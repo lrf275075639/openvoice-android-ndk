@@ -13,8 +13,8 @@
 
     <application
         android:name="VoiceApplication"
+        android:persistent="true"
         android:theme="@android:style/Theme.Light.NoTitleBar" >
-        android:persistent="true" >
         <service android:name="com.rokid.openvoice.VoiceService" >
             <intent-filter>
                 <action android:name="com.rokid.openvoice.VoiceService" />
@@ -32,7 +32,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
-        <activity android:name="com.rokid.test.MainActivity"/>
+
+        <activity android:name="com.rokid.test.MainActivity" />
 
         <receiver android:name="com.rokid.openvoice.VoiceReceiver" >
             <intent-filter android:priority="1000" >

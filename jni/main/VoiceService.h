@@ -27,7 +27,7 @@ public:
     VoiceService();
     ~VoiceService(){}
     
-    bool init(std::string (*fun)(void));
+    bool init(std::function<std::string()> fun);
     void start_siren(const bool isopen);
     void set_siren_state(const int32_t state);
     void network_state_change(const bool isconnect);

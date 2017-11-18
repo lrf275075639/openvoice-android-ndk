@@ -15,7 +15,7 @@ VoiceService::VoiceService() {
     clear();
 }
 
-bool VoiceService::init(std::string (*fun)(void)) {
+bool VoiceService::init(std::function<std::string()> fun) {
     std::lock_guard<std::mutex> lg(siren_mutex);
     get_skill_options = fun;
     if (mCurrentSirenState == SIREN_STATE_UNKNOWN) {

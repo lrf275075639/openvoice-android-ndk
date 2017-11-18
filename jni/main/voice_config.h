@@ -45,7 +45,7 @@ public:
         json_object *json_obj = json_object_from_file(OPENVOICE_PREFILE);
         
         if(json_obj == NULL) {
-            LOGE("%s cannot find", OPENVOICE_PREFILE);
+            ALOGE("%s cannot find", OPENVOICE_PREFILE);
             return false;
         }
         PrepareOptions preopts;
@@ -105,7 +105,7 @@ public:
     bool save_config(const std::string& device_id, const std::string& device_type_id,
                      const std::string& key, const std::string& secret) {
         
-        LOGI("dev_id = %s dev_t_id = %s key = %s secret = %s", device_id.c_str(),
+        ALOGI("dev_id = %s dev_t_id = %s key = %s secret = %s", device_id.c_str(),
              device_type_id.c_str(), key.c_str(), secret.c_str());
         
         if (_device_id.empty() && !device_id.empty()) _device_id = device_id;

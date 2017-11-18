@@ -2,7 +2,7 @@
 #include <sys/prctl.h>
 
 #include "VoiceService.h"
-#include "audio_recorder.h"
+#include "siren_control.h"
 
 #ifdef USB_AUDIO_DEVICE
 #warning "=============================USB_AUDIO_DEVICE==============================="
@@ -15,11 +15,12 @@ VoiceService::VoiceService() {
     clear();
 }
 
-bool VoiceService::init() {
+bool VoiceService::init(std::string (*fun)(void)) {
     std::lock_guard<std::mutex> lg(siren_mutex);
+    get_skill_options = fun;
     if (mCurrentSirenState == SIREN_STATE_UNKNOWN) {
         if (!setup(this, [](void *token, voice_event_t *event) {((VoiceService*)token)->voice_event_callback(event);})) {
-            LOGE("init siren failed.");
+            ALOGE("init siren failed.");
             return false;
         }
     } else {
@@ -32,7 +33,7 @@ done:
 }
 
 void VoiceService::start_siren(const bool isopen) {
-    LOGV("%s \t isopen : %d \t mCurrState : %d \t opensiren : %d",
+    ALOGV("%s \t isopen : %d \t mCurrState : %d \t opensiren : %d",
          __FUNCTION__, isopen, mCurrentSirenState, openSiren);
     
     std::lock_guard<std::mutex> lg(siren_mutex);
@@ -56,7 +57,7 @@ void VoiceService::start_siren(const bool isopen) {
 
 void VoiceService::set_siren_state(const int32_t state) {
     set_siren_state_change(state);
-    LOGV("current_status     >>   %d", state);
+    ALOGV("current_status     >>   %d", state);
 }
 
 #ifdef USB_AUDIO_DEVICE
@@ -73,7 +74,7 @@ bool VoiceService::wait_for_alsa_usb_card(){
 #endif
 
 void VoiceService::network_state_change(const bool connected) {
-    LOGV("network_state_change      isconnect  <<%d>>", connected);
+    ALOGV("network_state_change      isconnect  <<%d>>", connected);
     std::lock_guard<std::mutex> lg(speech_mutex);
     if (connected && mCurrentSpeechState != SPEECH_STATE_PREPARED) {
         if(_voice_config->prepare(_speech)){
@@ -101,16 +102,16 @@ void VoiceService::network_state_change(const bool connected) {
             _stop_siren_process_stream();
             mCurrentSirenState = SIREN_STATE_STOPED;
         }
-        LOGV("==========================BEGIN============================");
+        ALOGV("==========================BEGIN============================");
         _speech->release();
-        LOGV("===========================END=============================");
+        ALOGV("===========================END=============================");
         mCurrentSpeechState = SPEECH_STATE_RELEASED;
     }
 }
 
 void VoiceService::update_stack(const string &appid) {
     this->appid = appid;
-    LOGE("%s  %s", __FUNCTION__, this->appid.c_str());
+    ALOGE("%s  %s", __FUNCTION__, this->appid.c_str());
 }
 
 void VoiceService::update_config(const string& device_id, const string& device_type_id,
@@ -130,7 +131,8 @@ int32_t VoiceService::vad_start() {
             has_vt = false;
         }
         options.stack = appid;
-        //        options.skill_options = _callback->get_skill_options();
+        options.skill_options = get_skill_options();
+        ALOGV("skill options : %s", options.skill_options.c_str());
         return _speech->start_voice(&options);
     }
     return -1;
@@ -144,6 +146,25 @@ void VoiceService::voice_print(const voice_event_t *voice_event) {
         vt_word = (char*) voice_event->buff;
         has_vt = true;
     }
+}
+
+int32_t VoiceService::add_vt_word(siren_vt_word& _vt_word){
+    if(mCurrentSirenState == SIREN_STATE_STARTED)
+        return insert_vt_word(_vt_word);
+    return -1;
+}
+
+int32_t VoiceService::remove_vt_word(const string& word){
+    if(mCurrentSirenState == SIREN_STATE_STARTED)
+        if(!word.empty())
+            return delete_vt_word(word);
+    return -1;
+}
+
+int32_t VoiceService::get_vt_word(vector<siren_vt_word>& _vt_words_in){
+    if(mCurrentSirenState == SIREN_STATE_STARTED)
+        return query_vt_word(_vt_words_in);
+    return -1;
 }
 
 void VoiceService::voice_event_callback(voice_event_t *voice_event) {
@@ -176,21 +197,21 @@ void VoiceService::onEvent() {
         voice_event_t *_event = _events.front();
         _events.pop_front();
         lk.unlock();
-        LOGV("event : -------------------------%d----", _event->event);
+        ALOGV("event : -------------------------%d----", _event->event);
         switch(_event->event) {
             case SIREN_EVENT_WAKE_PRE:
                 _callback->voice_event(-1, VoiceEvent::VOICE_COMING, _event->sl);
-                LOGV("VAD_COMING");
+                ALOGV("VAD_COMING");
                 break;
             case SIREN_EVENT_WAKE_CMD:
                 _callback->voice_event(-1, VoiceEvent::VOICE_LOCAL_WAKE, _event->sl);
-                LOGV("VAD_CMD");
+                ALOGV("VAD_CMD");
                 break;
             case SIREN_EVENT_VAD_START:
                 if(session_id < 0) {
                     session_id = vad_start();
                     _callback->voice_event(session_id, VoiceEvent::VOICE_START);
-                    LOGV("VAD_START\t\t ID  :  <<%d>>", session_id);
+                    ALOGV("VAD_START\t\t ID  :  <<%d>>", session_id);
                 }
                 break;
             case SIREN_EVENT_VAD_DATA:
@@ -199,13 +220,13 @@ void VoiceService::onEvent() {
                 break;
             case SIREN_EVENT_VAD_END:
                 if(!_voice_config->cloud_vad_enable()){
-                    LOGV("VAD_END\t\t ID  :   <<%d>> ", session_id);
+                    ALOGV("VAD_END\t\t ID  :   <<%d>> ", session_id);
                     if(session_id > 0) _speech->end_voice(session_id);
                     clear();
                 }
                 break;
             case SIREN_EVENT_VAD_CANCEL:
-                LOGI("VAD_CANCEL\t\t ID  :   <<%d>> \t  %d", session_id, asr_finished);
+                ALOGI("VAD_CANCEL\t\t ID  :   <<%d>> \t  %d", session_id, asr_finished);
                 if(session_id > 0 && (!asr_finished || local_sleep)) _speech->cancel(session_id);
                 asr_finished = false;
                 if(!_voice_config->cloud_vad_enable()) clear();
@@ -234,7 +255,7 @@ void VoiceService::onResponse() {
         if (!_speech->poll(sr)) {
             break;
         }
-        LOGV("result : id \t %d \t \t type \t %d \t err \t %d", sr.id, sr.type, sr.err);
+        ALOGV("result : id \t %d \t \t type \t %d \t err \t %d", sr.id, sr.type, sr.err);
         if(sr.type == SPEECH_RES_START) {
             asr_finished = false;
             activation.clear();
@@ -243,7 +264,7 @@ void VoiceService::onResponse() {
             if(TRUE == json_object_object_get_ex(nlp_obj, "activation", &activation_obj)){
                 activation = json_object_get_string(activation_obj);
                 json_object_put(nlp_obj);
-                LOGV("result : activ \t %s", activation.c_str());
+                ALOGV("result : activ \t %s", activation.c_str());
                 _callback->voice_event(sr.id, transform_string_to_event(activation));
                 if(arbitration(activation)) {
                     set_siren_state(SIREN_STATE_SLEEP);
@@ -252,7 +273,7 @@ void VoiceService::onResponse() {
         }
         if(!arbitration(activation)) {
             if(sr.type == SPEECH_RES_INTER || sr.type == SPEECH_RES_ASR_FINISH){
-                LOGV("result : asr\t%s", sr.asr.c_str());
+                ALOGV("result : asr\t%s", sr.asr.c_str());
                 _callback->intermediate_result(sr.id, sr.type, sr.asr);
                 if(sr.type == SPEECH_RES_ASR_FINISH){
                     if(session_id == sr.id || _voice_config->cloud_vad_enable()){
@@ -262,8 +283,8 @@ void VoiceService::onResponse() {
                     asr = sr.asr;
                 }
             }else if(sr.type == SPEECH_RES_END) {
-                LOGV("result : nlp\t%s", sr.nlp.c_str());
-                LOGV("result : action\t%s", sr.action.c_str());
+                ALOGV("result : nlp\t%s", sr.nlp.c_str());
+                ALOGV("result : action\t%s", sr.action.c_str());
                 _callback->voice_command(sr.id, asr, sr.nlp, sr.action);
             }else if(sr.type == SPEECH_RES_CANCELLED){
                 if(!local_sleep) _callback->voice_event(sr.id, VoiceEvent::VOICE_CANCEL);
@@ -279,5 +300,5 @@ void VoiceService::onResponse() {
         }
         if(sr.type >= SPEECH_RES_END) clear(sr.id);
     }
-    LOGV("exit !!");
+    ALOGV("exit !!");
 }

@@ -5,7 +5,7 @@ include $(call all-subdir-makefiles)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := \
-		main/audio_recorder.cpp \
+		main/siren_control.cpp \
 		main/mic_array.c \
         main/VoiceService.cpp \
         main/VoiceCallback.cpp

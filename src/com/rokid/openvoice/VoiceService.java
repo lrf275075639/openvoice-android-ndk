@@ -6,6 +6,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -54,6 +57,7 @@ public class VoiceService extends android.app.Service{
 
     private Lock lock = new ReentrantLock();
     private Condition condition = lock.newCondition();
+    private static SkillOptionHelper mSkillOption = new SkillOptionHelper();
     private LinkedList<BearKidResult> results = new LinkedList<BearKidResult>();
     
     public Handler mHandler = new Handler(){
@@ -89,6 +93,8 @@ public class VoiceService extends android.app.Service{
 
 	@Override
 	public void onCreate(){
+		mSkillOption.bindSkills();
+		
 		ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo mNetworkInfo = cm.getActiveNetworkInfo();
 		if(mNetworkInfo != null){
@@ -164,6 +170,20 @@ public class VoiceService extends android.app.Service{
 			newResult.extype = 4;
 		}
 		addToTarget(newResult);
+	}
+	/**
+	 * jni call
+	 */
+	private String getSkillOptions(){
+		String skillOptions = mSkillOption.getSkillOptions();
+		JSONObject skillJSONObject = new JSONObject();
+		try{
+			JSONObject jsonObject = new JSONObject(skillOptions);
+			skillJSONObject.put("application", jsonObject);
+		}catch(JSONException e){ 
+			e.printStackTrace();
+		}   
+		return skillJSONObject.toString();
 	}
 	
 	private void addToTarget(BearKidResult newResult){

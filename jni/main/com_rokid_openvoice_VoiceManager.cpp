@@ -4,6 +4,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <list>
+#include <stdlib.h>
 
 #include "json.h"
 #include "VoiceService.h"
@@ -11,6 +12,11 @@
 shared_ptr<VoiceService> voice_service = make_shared<VoiceService>();
 
 JavaVM* _vm;
+JNIEnv* _env;
+jobject jobj;
+jmethodID method_id;
+
+std::atomic_flag thread_flag;
 
 extern "C" {
     JNIEXPORT jboolean JNICALL
@@ -28,6 +34,12 @@ extern "C" {
                                                        jstring device_id, jstring device_type_id, jstring key, jstring secret);
     JNIEXPORT void JNICALL
     Java_com_rokid_openvoice_VoiceManager_registCallback(JNIEnv *env, jclass, jobject obj);
+    JNIEXPORT int JNICALL
+    Java_com_rokid_openvoice_VoiceManager_addVTWord(JNIEnv *env, jclass, jobject vt_word);
+    JNIEXPORT int JNICALL
+    Java_com_rokid_openvoice_VoiceManager_removeVTWord(JNIEnv *env, jclass, jstring vt_word);
+    JNIEXPORT jobject JNICALL
+    Java_com_rokid_openvoice_VoiceManager_getVTWords(JNIEnv *env, jclass);
 }
 
 class Handle{
@@ -35,7 +47,7 @@ public:
     Handle(JNIEnv *env){
         jclass callback = env->FindClass("com/rokid/openvoice/VoiceCallback");
         if(callback == NULL){
-            LOGI("find class error");
+            ALOGI("find class error");
             return;
         }
         callback_method_table[MSG_VOICE_EVENT_ID]
@@ -172,36 +184,46 @@ shared_ptr<Handle> handle;
 JNIEXPORT jboolean JNICALL 
 Java_com_rokid_openvoice_VoiceManager_init(JNIEnv *env, jclass)
 {
-    LOGD("%s", __FUNCTION__);
+    ALOGD("%s", __FUNCTION__);
+    jclass clazz = env->FindClass("com/rokid/openvoice/VoiceService");
+    if(clazz == NULL) {
+        ALOGE("find class VoiceService error");
+        return -1;
+    }
+    method_id = env->GetMethodID(clazz, "getSkillOptions", "()Ljava/lang/String;");
+    jobj = env->NewGlobalRef(env->AllocObject(clazz));
+    
     handle = make_shared<Handle>(env);
-    return voice_service->init();
+    return voice_service->init([&]()->std::string{
+        while(!thread_flag.test_and_set()) _vm->AttachCurrentThread(&_env, NULL);
+        return std::string(_env->GetStringUTFChars((jstring)_env->CallObjectMethod(jobj, method_id), NULL));});
 }
 
 JNIEXPORT void JNICALL 
 Java_com_rokid_openvoice_VoiceManager_startSiren(JNIEnv *env, jclass, jboolean isopen)
 {
-    LOGD("%s", __FUNCTION__);
+    ALOGD("%s", __FUNCTION__);
     voice_service->start_siren((bool)isopen);
 }
 
 JNIEXPORT void JNICALL 
 Java_com_rokid_openvoice_VoiceManager_setSirenState(JNIEnv *env, jclass, jint state)
 {
-    LOGD("%s", __FUNCTION__);
+    ALOGD("%s", __FUNCTION__);
     voice_service->set_siren_state((int)state);
 }
 
 JNIEXPORT void JNICALL 
 Java_com_rokid_openvoice_VoiceManager_networkStateChange(JNIEnv *env, jclass, jboolean isconnect)
 {
-    LOGD("%s", __FUNCTION__);
+    ALOGD("%s", __FUNCTION__);
     voice_service->network_state_change((bool)isconnect);
 }
 
 JNIEXPORT void JNICALL 
 Java_com_rokid_openvoice_VoiceManager_updateStack(JNIEnv *env, jclass, jstring appid)
 {
-    LOGD("%s", __FUNCTION__);
+    ALOGD("%s", __FUNCTION__);
     voice_service->update_stack(string(env->GetStringUTFChars(appid, NULL)));
 }
 
@@ -209,7 +231,7 @@ JNIEXPORT void JNICALL
 Java_com_rokid_openvoice_VoiceManager_updateConfig(JNIEnv *env, jclass, 
                                                    jstring device_id, jstring device_type_id, jstring key, jstring secret)
 {
-    LOGD("%s", __FUNCTION__);
+    ALOGD("%s", __FUNCTION__);
     voice_service->update_config(
                                  string(env->GetStringUTFChars(device_id, NULL)),
                                  string(env->GetStringUTFChars(device_type_id, NULL)),
@@ -219,10 +241,69 @@ Java_com_rokid_openvoice_VoiceManager_updateConfig(JNIEnv *env, jclass,
 
 JNIEXPORT void JNICALL 
 Java_com_rokid_openvoice_VoiceManager_registCallback(JNIEnv *env, jclass, jobject obj){
-    LOGD("%s", __FUNCTION__);
+    ALOGD("%s", __FUNCTION__);
     if(handle.get()) handle->start(env->NewGlobalRef(obj));
     voice_service->regist_callback(
                                    [&](int32_t method_id, const string& data){if(handle.get()) handle->send_message(Handle::Message(method_id, data));});
+}
+
+JNIEXPORT int JNICALL
+Java_com_rokid_openvoice_VoiceManager_addVTWord(JNIEnv *env, jclass, jobject vt_word)
+{
+    ALOGD("%s", __FUNCTION__);
+    siren_vt_word _vt_word;
+    jclass clazz = env->GetObjectClass(vt_word);
+    
+    jfieldID field = env->GetFieldID(clazz, "vt_type", "I");
+    _vt_word.vt_type = env->GetIntField(vt_word, field);
+    
+    field = env->GetFieldID(clazz, "vt_word", "Ljava/lang/String;");
+    _vt_word.vt_word = string(env->GetStringUTFChars((jstring)env->GetObjectField(vt_word, field), NULL));
+                              
+    field = env->GetFieldID(clazz, "vt_pinyin", "Ljava/lang/String;");
+    _vt_word.vt_pinyin = string(env->GetStringUTFChars((jstring)env->GetObjectField(vt_word, field), NULL));
+    _vt_word.use_default_config = true;
+        
+    return voice_service->add_vt_word(_vt_word);
+}
+
+JNIEXPORT int JNICALL
+Java_com_rokid_openvoice_VoiceManager_removeVTWord(JNIEnv *env, jclass, jstring vt_word)
+{
+    ALOGD("%s", __FUNCTION__);
+    return voice_service->remove_vt_word(string(env->GetStringUTFChars(vt_word, NULL)));
+}
+
+JNIEXPORT jobject JNICALL
+Java_com_rokid_openvoice_VoiceManager_getVTWords(JNIEnv *env, jclass)
+{
+    ALOGD("%s", __FUNCTION__);
+    vector<siren_vt_word> _vt_words_in;
+    int32_t count = voice_service->get_vt_word(_vt_words_in);
+    
+    jclass class_ArrayList = env->FindClass("java/util/ArrayList");
+    jmethodID construct_array_list = env->GetMethodID(class_ArrayList, "<init>", "()V");
+    jobject obj_ArrayList = env->NewObject(class_ArrayList,construct_array_list, "");
+    jmethodID arrayList_add = env->GetMethodID(class_ArrayList, "add", "(Ljava/lang/Object;)Z");
+    
+    jclass class_vt_word = env->FindClass("com/rokid/openvoice/VoiceManager$VTWord;");
+    jmethodID construct_vt_word = env->GetMethodID(class_vt_word,"<init>", "()V");
+    
+    for(int i = 0; i < count; i++){
+        //new a object
+        jobject obj_vt_word = env->NewObject(class_vt_word,construct_vt_word,"");
+        
+        jfieldID field_vt_type = env->GetFieldID(class_vt_word, "vt_type", "I");
+        jfieldID field_vt_word = env->GetFieldID(class_vt_word, "vt_word", "Ljava/lang/String;");
+        jfieldID field_vt_pinyin = env->GetFieldID(class_vt_word, "vt_pinyin", "Ljava/lang/String;");
+        
+        env->SetIntField(obj_vt_word, field_vt_type, _vt_words_in[i].vt_type);
+        env->SetObjectField(obj_vt_word, field_vt_word, env->NewStringUTF(_vt_words_in[i].vt_word.c_str()));
+        env->SetObjectField(obj_vt_word, field_vt_pinyin ,env->NewStringUTF(_vt_words_in[i].vt_pinyin.c_str()));
+        
+        env->CallObjectMethod(obj_ArrayList, arrayList_add, obj_vt_word);
+    }
+    return obj_ArrayList;
 }
 
 static JNINativeMethod method_table[] = {
@@ -233,6 +314,10 @@ static JNINativeMethod method_table[] = {
     { "updateStack", "(Ljava/lang/String;)V", (void*)Java_com_rokid_openvoice_VoiceManager_updateStack},
     { "updateConfig", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", (void*)Java_com_rokid_openvoice_VoiceManager_updateConfig},
     { "registCallback", "(Lcom/rokid/openvoice/VoiceCallback;)V", (void*)Java_com_rokid_openvoice_VoiceManager_registCallback},
+    
+    { "addVTWord", "(Lcom/rokid/openvoice/VoiceManager$VTWord;)I", (void*)Java_com_rokid_openvoice_VoiceManager_addVTWord},
+    { "removeVTWord", "(Ljava/lang/String;)I", (void*)Java_com_rokid_openvoice_VoiceManager_removeVTWord},
+    { "getVTWords", "()Ljava/util/ArrayList;", (void*)Java_com_rokid_openvoice_VoiceManager_getVTWords},
 };
 
 int register_com_rokid_openvoice_VoiceManager(JNIEnv* env)
@@ -240,7 +325,7 @@ int register_com_rokid_openvoice_VoiceManager(JNIEnv* env)
     const char* className = "com/rokid/openvoice/VoiceManager";
     jclass target = env->FindClass(className);
     if (target == NULL) {
-        LOGD("find class for %s failed", className);
+        ALOGD("find class for %s failed", className);
         return -1;
     }
 #define NELEM(x)            (sizeof(x)/sizeof(*(x)))
@@ -259,7 +344,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     // for voice_manager java callback
     _vm = vm;
     if (vm->GetEnv((void**)&env, JNI_VERSION_1_4) != JNI_OK) {
-        LOGD("%s: JNI_OnLoad failed", "VoiceManager");
+        ALOGD("%s: JNI_OnLoad failed", "VoiceManager");
         return -1;
     }
     register_com_rokid_openvoice_VoiceManager(env);

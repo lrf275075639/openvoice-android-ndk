@@ -13,6 +13,7 @@
 
     <application
         android:name="VoiceApplication"
+        android:theme="@android:style/Theme.Light.NoTitleBar" >
         android:persistent="true" >
         <service android:name="com.rokid.openvoice.VoiceService" >
             <intent-filter>
@@ -24,20 +25,14 @@
         <service
             android:name="com.rokid.tts.TtsService"
             android:exported="true"
-            android:process=":TtsService" >
+            android:process=":tts" >
             <intent-filter>
                 <action android:name="com.rokid.tts.TtsService" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
-        <service
-            android:name="com.rokid.openvoice.SirenService"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="com.rokid.openvoice.SirenService" />
-            </intent-filter>
-        </service>
+        <activity android:name="com.rokid.test.MainActivity"/>
 
         <receiver android:name="com.rokid.openvoice.VoiceReceiver" >
             <intent-filter android:priority="1000" >

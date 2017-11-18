@@ -666,17 +666,18 @@ siren_vt_t SirenProxy::add_vt_word(siren_vt_word *word, bool use_default_setting
         return SIREN_VT_DUP;
     }
     uint32_t word_size = 0;
-    for(int i = 0; i < word->vt_phone.length(); i++)
-        if(word->vt_phone[i] >= 49 && word->vt_phone[i] <= 52)
+    for(int i = 0; i < word->vt_pinyin.length(); i++){
+        if(word->vt_pinyin[i] >= 49 && word->vt_pinyin[i] <= 53){
             word_size++;
+//            if(word->vt_pinyin[i] == 49) word->vt_pinyin[i] = 51;
+        }
+    }
 
-    std::string pinyin;
-    if (!phonemeGen.pinyin2Phoneme(word->vt_phone.c_str(), pinyin)) {
+    if (word->vt_phone.empty() && !phonemeGen.pinyin2Phoneme(word->vt_pinyin.c_str(), word->vt_phone)) {
         siren_printf(SIREN_ERROR, "cannot gen phoneme for %s", word->vt_phone.c_str());
         return SIREN_VT_ERROR;
     }
-    siren_printf(SIREN_INFO, "use phoneme %s", pinyin.c_str());
-    word->vt_phone = pinyin;
+    siren_printf(SIREN_INFO, "use phoneme %s", word->vt_phone.c_str());
 
     if (use_default_settings) {
         float vt_block_avg_score = 4.2f, vt_block_min_score = 2.7f;

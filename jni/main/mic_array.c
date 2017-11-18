@@ -75,7 +75,7 @@ int find_snd(const char* snd)
     int len;
     
     if (!(fs = fopen(path, "r"))) {
-        LOGE("%s  :  %s", __FUNCTION__, strerror(errno));
+        ALOGE("%s  :  %s", __FUNCTION__, strerror(errno));
         return errno;
     }
     
@@ -92,7 +92,7 @@ int find_snd(const char* snd)
         }
         b = e + 1;
     }
-    LOGI("find -> %d", card);
+    ALOGI("find -> %d", card);
     return card;
 }
 
@@ -110,7 +110,7 @@ static void tinymix_set_value(struct mixer* mixer, const char* control,
         ctl = mixer_get_ctl_by_name(mixer, control);
     
     if (!ctl) {
-        LOGE("Invalid mixer control\n");
+        ALOGE("Invalid mixer control\n");
         return;
     }
     
@@ -124,20 +124,20 @@ static void tinymix_set_value(struct mixer* mixer, const char* control,
             
             for (i = 0; i < num_ctl_values; i++) {
                 if (mixer_ctl_set_value(ctl, i, value)) {
-                    LOGE("Error: invalid value  %s\n", strerror(errno));
+                    ALOGE("Error: invalid value  %s\n", strerror(errno));
                     return;
                 }
             }
         } else {
             /* Set multiple values */
             if (num_values > num_ctl_values) {
-                LOGE("Error: %d values given, but control only takes %d\n",
+                ALOGE("Error: %d values given, but control only takes %d\n",
                      num_values, num_ctl_values);
                 return;
             }
             for (i = 0; i < num_values; i++) {
                 if (mixer_ctl_set_value(ctl, i, atoi(values[i]))) {
-                    LOGE("Error: invalid value for index %d\n", i);
+                    ALOGE("Error: invalid value for index %d\n", i);
                     return;
                 }
             }
@@ -145,13 +145,13 @@ static void tinymix_set_value(struct mixer* mixer, const char* control,
     } else {
         if (type == MIXER_CTL_TYPE_ENUM) {
             if (num_values != 1) {
-                LOGE("Enclose strings in quotes and try again\n");
+                ALOGE("Enclose strings in quotes and try again\n");
                 return;
             }
             if (mixer_ctl_set_enum_by_string(ctl, values[0]))
-                LOGE("Error: invalid enum value\n");
+                ALOGE("Error: invalid enum value\n");
         } else {
-            LOGE("Error: only enum types can be set with strings\n");
+            ALOGE("Error: only enum types can be set with strings\n");
         }
     }
 }
@@ -171,7 +171,7 @@ int mic_array_device_open(struct mic_array_device_t **device)
     dev = (struct mic_array_device_t*)dev_ex;
     
     if (!dev_ex) {
-        LOGE("MIC_ARRAY: FAILED TO ALLOC SPACE");
+        ALOGE("MIC_ARRAY: FAILED TO ALLOC SPACE");
         return -1;
     }
     
@@ -189,7 +189,7 @@ int mic_array_device_open(struct mic_array_device_t **device)
     dev->frame_cnt = FRAME_COUNT;
     dev_ex->buffer = (char*)malloc(dev->frame_cnt);
     *device = dev;
-    LOGI("alloc frame buffer size %d", dev->frame_cnt);
+    ALOGI("alloc frame buffer size %d", dev->frame_cnt);
     return 0;
 }
 
@@ -197,7 +197,7 @@ static void resetBuffer(struct mic_array_device_ex* dev) { dev->pts = 0; }
 
 static int mic_array_device_close(struct mic_array_device_t *mic_array_device)
 {
-    LOGI("pcm close");
+    ALOGI("pcm close");
     
     struct mic_array_device_ex* dev_ex = (struct mic_array_device_ex*)mic_array_device;
     
@@ -220,7 +220,7 @@ static int mic_array_device_start_stream(struct mic_array_device_t* dev)
     }
     pcm = pcm_open(card, PCM_DEVICE, PCM_IN, &pcm_config_default);
     if (!pcm || !pcm_is_ready(pcm)) {
-        LOGE("Unable to open PCM device %u (%s)\n", card, pcm_get_error(pcm));
+        ALOGE("Unable to open PCM device %u (%s)\n", card, pcm_get_error(pcm));
         if (pcm != NULL) {
             pcm_close(pcm);
             pcm = NULL;
@@ -242,7 +242,7 @@ static int mic_array_device_stop_stream(struct mic_array_device_t* dev)
 
 static int mic_array_device_finish_stream(struct mic_array_device_t* dev)
 {
-    LOGE("finish stream is no use");
+    ALOGE("finish stream is no use");
     return -1;
 }
 
@@ -257,7 +257,7 @@ static int read_left_frame(
     int ret = 0;
     if (dev->pts == 0) {
         if ((ret = read_frame(dev, dev->buffer)) != 0) {
-            LOGE("read_frame %s", strerror(errno));
+            ALOGE("read_frame %s", strerror(errno));
             resetBuffer(dev);
             return ret;
         }
@@ -275,7 +275,7 @@ static int read_left_frame(
             memcpy(buff, dev->buffer, dev->pts);
             left -= dev->pts;
             if ((ret = read_frame(dev, dev->buffer)) != 0) {
-                LOGE("read_frame %s", strerror(errno));
+                ALOGE("read_frame %s", strerror(errno));
                 resetBuffer(dev);
                 return ret;
             }
@@ -297,12 +297,12 @@ static int mic_array_device_read_stream(struct mic_array_device_t* dev, char* bu
     int left = 0;
     int size = dev->frame_cnt;
     if (size <= 0) {
-        LOGE("frame cnt lt 0");
+        ALOGE("frame cnt lt 0");
         return -1;
     }
     
     if (buff == NULL) {
-        LOGE("null buffer");
+        ALOGE("null buffer");
         return -1;
     }
     
@@ -320,7 +320,7 @@ static int mic_array_device_read_stream(struct mic_array_device_t* dev, char* bu
         
         for (i = 0; i < cnt; i++) {
             if ((ret = read_frame(dev, buff + dev_ex->pts + i * size)) != 0) {
-                LOGE("read_frame %s", strerror(errno));
+                ALOGE("read_frame %s", strerror(errno));
                 resetBuffer(dev_ex);
                 return ret;
             }
@@ -329,7 +329,7 @@ static int mic_array_device_read_stream(struct mic_array_device_t* dev, char* bu
             dev_ex->pts = 0;
             return ret;
         }
-        LOGE("-------------------cnt : %d, left : %d, cache : %d, frame_cnt : %d", cnt, left, dev_ex->pts, frame_cnt);
+//        ALOGE("-------------------cnt : %d, left : %d, cache : %d, frame_cnt : %d", cnt, left, dev_ex->pts, frame_cnt);
         target = buff + dev_ex->pts + cnt * size;
         left = frame_cnt - (dev_ex->pts + cnt * size);
         dev_ex->pts = 0;
@@ -339,7 +339,7 @@ static int mic_array_device_read_stream(struct mic_array_device_t* dev, char* bu
     }
     
     if ((ret = read_left_frame(dev_ex, target, left)) != 0) {
-        LOGE("read frame return %d, pcm read error", ret);
+        ALOGE("read frame return %d, pcm read error", ret);
         resetBuffer(dev_ex);
         return ret;
     }
@@ -359,6 +359,6 @@ static int mic_array_device_get_stream_buff_size(struct mic_array_device_t* dev)
 
 static int mic_array_device_resume_stream(struct mic_array_device_t* dev)
 {
-    LOGI("not implmentation");
+    ALOGI("not implmentation");
     return -1;
 }

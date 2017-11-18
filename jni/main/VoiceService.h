@@ -9,6 +9,8 @@
 #include <condition_variable>
 #include <stdlib.h>
 #include <list>
+#include <vector>
+#include <functional>
 
 #include "siren.h"
 #include "speech.h"
@@ -25,7 +27,7 @@ public:
     VoiceService();
     ~VoiceService(){}
     
-    bool init();
+    bool init(std::string (*fun)(void));
     void start_siren(const bool isopen);
     void set_siren_state(const int32_t state);
     void network_state_change(const bool isconnect);
@@ -34,6 +36,10 @@ public:
     
     template<typename F>
     void regist_callback(const F& send){this->_callback->set_callback(send);}
+    
+    int32_t add_vt_word(siren_vt_word&);
+    int32_t remove_vt_word(const string&);
+    int32_t get_vt_word(vector<siren_vt_word>& _vt_words_in);
     
 private:
 #ifdef USB_AUDIO_DEVICE
@@ -84,6 +90,7 @@ private:
     shared_ptr<VoiceCallback> _callback;
     shared_ptr<VoiceConfig> _voice_config;
     list<voice_event_t*> _events;
+    std::function<std::string()> get_skill_options;
     
     string appid;
     string vt_word;

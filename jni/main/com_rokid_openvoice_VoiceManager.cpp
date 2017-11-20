@@ -3,6 +3,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <list>
+#include <atomic>
 
 #include "json.h"
 #include "VoiceService.h"

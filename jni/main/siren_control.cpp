@@ -61,8 +61,6 @@ int query_vt_word(std::vector<siren_vt_word>& _vt_words_in){
     return count;
 }
 
-void set_siren_state_change(int state);
-
 void _start_siren_process_stream() {
     start_siren_process_stream(_siren, &event_callback);
 }

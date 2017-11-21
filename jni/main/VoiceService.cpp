@@ -229,7 +229,7 @@ void VoiceService::onEvent() {
                 ALOGI("VAD_CANCEL\t\t ID  :   <<%d>> \t  %d", session_id, asr_finished);
                 if(session_id > 0 && (!asr_finished || local_sleep)) _speech->cancel(session_id);
                 asr_finished = false;
-                if(!_voice_config->cloud_vad_enable()) clear();
+                if(_voice_config->cloud_vad_enable()) clear();
                 break;
             case SIREN_EVENT_VOICE_PRINT:
                 voice_print(_event);

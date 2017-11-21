@@ -95,7 +95,9 @@ private:
         while(true){
             lk.lock();
             m_cond.wait(lk, [this]{return !message_queue.empty();});
+            _env->PushLocalFrame(64);
             handle_message(message_queue.front());
+            _env->PopLocalFrame(NULL);
             message_queue.pop_front();
             lk.unlock();
         }
@@ -197,12 +199,14 @@ Java_com_rokid_openvoice_VoiceManager_init(JNIEnv *env, jclass)
         while(!thread_flag.test_and_set()) _vm->AttachCurrentThread(&_env, NULL);
         std::string skill_options;
         
+        _env->PushLocalFrame(8);
         jstring jstr = (jstring)_env->CallObjectMethod(jobj, method_id);
         if(jstr != NULL){
             const char* str = _env->GetStringUTFChars(jstr, NULL);
             if (strlen(str) > 0) skill_options = str;
             _env->ReleaseStringUTFChars(jstr, str);
         }
+        _env->PopLocalFrame(NULL);
         return skill_options;});
 }
 

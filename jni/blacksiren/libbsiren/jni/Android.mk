@@ -34,7 +34,7 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := jsonc_static
-LOCAL_SRC_FILES := ../../libjsonc/obj/local/armeabi-v7a/libjsonc_static.a
+LOCAL_SRC_FILES := ../../libjsonc/obj/local/$(TARGET_ARCH_ABI)/libjsonc_static.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(LOCAL_PATH)/android.config

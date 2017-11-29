@@ -57,12 +57,26 @@
                     "vt_block_avg_score":4.2,
                     "vt_block_min_score":2.7,
                     "vt_left_check":true,
-                    "vt_right_check":false,
+                    "vt_right_check":true,
                     "vt_remote_check_with_aec":true,
                     "vt_remote_check_without_aec":true,
                     "vt_local_classify_check":true,
                     "vt_classify_shield":-0.3,
                     "vt_nnet_path":"/system/workdir_cn/final.ruoqi.mod"
+                },
+                {
+                    "vt_type":1,
+                    "vt_word":"暴风大耳朵",
+                    "vt_phone":"b|b_B|# a4 W|W_E|## f|f_B|# e3 NG|NG_E|## d|d_B|# a4|a4_E|## er3|er3_S|## d|d_B|# w o3|o3_E|##",
+                    "vt_block_avg_score":3.2,
+                    "vt_block_min_score":1.7,
+                    "vt_left_check":true,
+                    "vt_right_check":false,
+                    "vt_remote_check_with_aec":true,
+                    "vt_remote_check_without_aec":true,
+                    "vt_local_classify_check":false,
+                    "vt_classify_shield":-0.3,
+                    "vt_nnet_path":""
                 },
                 {
                     "vt_type":2,

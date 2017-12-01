@@ -215,8 +215,10 @@ void VoiceService::onEvent() {
                 }
                 break;
             case SIREN_EVENT_VAD_DATA:
-                if (session_id > 0 && HAS_VOICE(_event->flag))
+                if (session_id > 0 && HAS_VOICE(_event->flag)){
                     _speech->put_voice(session_id, (uint8_t *)_event->buff, _event->length);
+                    _callback->voice_event(session_id, VoiceEvent::VOICE_DATA, 0.0,  _event->background_energy);
+                }
                 break;
             case SIREN_EVENT_VAD_END:
                 if(!_voice_config->cloud_vad_enable()){

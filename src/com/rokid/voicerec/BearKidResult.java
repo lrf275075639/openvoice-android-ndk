@@ -13,6 +13,14 @@ public class BearKidResult implements Parcelable {
 	public double energy;
 	public double location;
 
+	@Override
+	public String toString() {
+		return "BearKidResult [type=" + type + ", activation=" + activation
+				+ ", extype=" + extype + ", asr=" + asr + ", nlp=" + nlp
+				+ ", action=" + action + ", energy=" + energy + ", location="
+				+ location + "]";
+	}
+
 	public BearKidResult() {
 	}
 

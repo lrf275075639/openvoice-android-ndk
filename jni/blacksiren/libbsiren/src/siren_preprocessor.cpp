@@ -60,6 +60,7 @@ int SirenPreprocessorImpl::init() {
         siren_printf(SIREN_INFO, "no rs is need");
     }
 
+    doAEC = false;
     micinfo.m_pMicInfo_aec = new r2_mic_info;
     micinfo.m_pMicInfo_aec->iMicNum = config.alg_config.alg_aec_mics.size();
     if (micinfo.m_pMicInfo_aec->iMicNum > 0) {
@@ -158,7 +159,7 @@ int SirenPreprocessorImpl::processData(char *pDataIn, int lenIn, char *& pData_o
         short* temp = (short *)pDataIn;
         for (int i = 0; i < lenIn / 2; i++) {
             m_pData[i] = temp[i];
-            m_pData[i] <<= 16;
+            m_pData[i] <<= 15;
         }
         pDataIn = (char *)m_pData;
         lenIn *= 2;

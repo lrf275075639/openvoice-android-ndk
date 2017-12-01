@@ -93,7 +93,7 @@ LOCAL_C_INCLUDES += \
 		$(LOCAL_PATH)/../prebuilt/support/include \
 		$(LOCAL_PATH)/../../libjsonc/include
 
-LOCAL_CFLAGS:= $(L_CFLAGS) -Wall -Wextra -std=c++11 -DANDROID_VERSION=$(ANDROID_VERSION)
+LOCAL_CFLAGS:= $(L_CFLAGS) -Wall -Wextra -std=c++11
 LOCAL_MODULE:= libbsiren
 LOCAL_LDLIBS:= -L$(SYSROOT)/usr/lib -llog
 LOCAL_SHARED_LIBRARIES := libr2ssp libztvad libr2vt 

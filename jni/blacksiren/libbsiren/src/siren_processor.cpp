@@ -858,11 +858,13 @@ void SirenProcessorImpl::reset() {
 }
 
 float SirenProcessorImpl::getLastFrameEnergy() {
-    return unit.m_pMem_vbv3->GetEn_LastFrm();
+//    return unit.m_pMem_vbv3->GetEn_LastFrm();
+    return unit.m_pMem_vad2->getenergy_Lastframe();
 }
 
 float SirenProcessorImpl::getLastFrameThreshold() {
-    return unit.m_pMem_vbv3->GetEn_Shield();
+//    return unit.m_pMem_vbv3->GetEn_Shield();
+    return unit.m_pMem_vad2->getenergy_Threshold();
 }
 
 void SirenProcessorImpl::syncVTWord(std::vector<siren_vt_word> &words) {

@@ -30,22 +30,14 @@ public class VoiceService extends android.app.Service{
     public static final int MSG_VOICE_COMMAND           	= 2;
     public static final int MSG_SPEECH_ERROR            	= 3;
     
-    private static final int RESULT_TYPE_SOUND_LOCATION		= 0;
-    private static final int RESULT_TYPE_VOICE_ENERGY		= 1;
-    private static final int RESULT_TYPE_ACTIVATION			= 2;
-    private static final int RESULT_TYPE_INTERMEDIATE_ASR	= 3;
-    private static final int RESULT_TYPE_FINISHED_ASR		= 4;
-    private static final int RESULT_TYPE_VOICE_COMMAND		= 5;
-    private static final int RESULT_TYPE_LOCAL_SLEEP		= 6;
-	private static final int RESULT_TYPE_EXCEPTION			= 7;
-    
     private static final int VOICE_COMING               	= 0;
     private static final int VOICE_LOCAL_WAKE           	= 1;
     private static final int VOICE_START                	= 2;
-    private static final int VOICE_ACCEPT               	= 3;
-    private static final int VOICE_REJECT               	= 4;
-    private static final int VOICE_CANCEL               	= 5;
-    private static final int VOICE_LOCAL_SLEEP       		= 6;
+    private static final int VOICE_DATA           	        = 3;
+    private static final int VOICE_ACCEPT               	= 4;
+    private static final int VOICE_REJECT               	= 5;
+    private static final int VOICE_CANCEL               	= 6;
+    private static final int VOICE_LOCAL_SLEEP       		= 7;
     
     private static final int TYPE_INTERMEDIATE_ASR       	= 0;
     private static final int TYPE_FINISHED_ASR       		= 2;
@@ -114,6 +106,10 @@ public class VoiceService extends android.app.Service{
 //			newResult.type = BearKidResult.TYPE_EXCEPTION;
 //			newResult.extype = 0;
 //			break;
+		case VOICE_DATA:
+			newResult.type = BearKidResult.TYPE_VOICE_INFO;
+			newResult.energy = energy;
+			break;
 		case VOICE_ACCEPT:
 			newResult.type = BearKidResult.TYPE_ACTIVATION;
 			newResult.activation = 0;

@@ -3,7 +3,7 @@
         "mic_num":4,
         "mic_channel_num":4,
         "mic_sample_rate":16000,
-        "mic_audio_byte":2,
+        "mic_audio_byte":4,
         "mic_frame_length":10,
         "siren_ipc":"channel",
         "siren_channel_rmem":4194304,

@@ -260,6 +260,7 @@ void VoiceService::onResponse() {
         ALOGV("result : id \t %d \t \t type \t %d \t err \t %d", sr.id, sr.type, sr.err);
         if(sr.type == SPEECH_RES_START) {
             asr_finished = false;
+            local_sleep = false;
             activation.clear();
         } else if((sr.type == SPEECH_RES_INTER || sr.type == SPEECH_RES_END) && !sr.extra.empty()) {
             nlp_obj = json_tokener_parse(sr.extra.c_str());

@@ -21,9 +21,9 @@ PRODUCT_PACKAGES += \
 
 #libraries
 PRODUCT_PACKAGES += \
+					libmic_array \
 					libopenvoice \
 					libopenvoice2
 
-#config file
 PRODUCT_PACKAGES += \
-					workdir_cn \
+					workdir_cn

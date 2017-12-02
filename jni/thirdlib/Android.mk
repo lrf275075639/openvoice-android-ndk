@@ -1,5 +1,5 @@
-SDK_BLACKSIREN := blacksiren/libbsiren/libs/armeabi-v7a
-DEP_LIBRARIES  := thirdlib/$(ANDROID_VERSION)
+SDK_BLACKSIREN := blacksiren/libbsiren/libs/$(TARGET_ARCH_ABI)
+DEP_LIBRARIES  := thirdlib/$(ANDROID_VERSION)/$(TARGET_ARCH_ABI)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libbsiren
@@ -9,7 +9,7 @@ include $(PREBUILT_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_MODULE := libr2mvdrbf
 LOCAL_SRC_FILES := $(SDK_BLACKSIREN)/libr2mvdrbf.so
-include $(PREBUILT_SHARED_LIBRARY)
+#include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libr2ssp
@@ -33,10 +33,10 @@ include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libssl
-LOCAL_SRC_FILES := thirdlib/$(MY_TARGET_PLATFORM_LEVEL)/libssl.so
+LOCAL_SRC_FILES := thirdlib/$(MY_TARGET_PLATFORM_LEVEL)/$(TARGET_ARCH_ABI)/libssl.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libcrypto
-LOCAL_SRC_FILES := thirdlib/$(MY_TARGET_PLATFORM_LEVEL)/libcrypto.so
+LOCAL_SRC_FILES := thirdlib/$(MY_TARGET_PLATFORM_LEVEL)/$(TARGET_ARCH_ABI)/libcrypto.so
 include $(PREBUILT_SHARED_LIBRARY)

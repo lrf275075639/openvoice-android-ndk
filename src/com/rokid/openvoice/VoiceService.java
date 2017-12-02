@@ -94,6 +94,34 @@ public class VoiceService extends android.app.Service{
 		}
 //		mUEventObserver.startObserving("/sound/card1/pcmC1D0c");
 	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		String cmd = intent.getStringExtra("cmd");
+		if (cmd == null)
+			return START_NOT_STICKY;
+		if (cmd.equals("awake")) {
+			VoiceManager.setSirenState(VoiceManager.SIREN_STATE_AWAKE);
+		} else if (cmd.equals("sleep")) {
+			VoiceManager.setSirenState(VoiceManager.SIREN_STATE_SLEEP);
+		} else if (cmd.equals("updateStack")) {
+			String cdomain = intent.getStringExtra("cdomain");
+			if (cdomain == null)
+				cdomain = "";
+			String sdomain = intent.getStringExtra("sdomain");
+			if (sdomain == null)
+				sdomain = "";
+
+			if (cdomain == null && sdomain == null)
+				VoiceManager.updateStack("");
+			else if (cdomain == null && sdomain != null)
+				Log.i(TAG, "update stack: invalid arguments, cdomain = " + cdomain + ", sdomain = " + sdomain);
+			else
+				VoiceManager.updateStack(cdomain + ":" + (sdomain == null ? "" : sdomain));
+		}
+
+		return START_NOT_STICKY;
+	}
 	
 	private void handleVoiceEvent(int id, int event, double sl, double energy){
 		BearKidResult newResult = new BearKidResult();

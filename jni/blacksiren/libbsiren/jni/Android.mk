@@ -7,38 +7,40 @@ $(patsubst ./%,%, \
  )
 endef
 
+include $(LOCAL_PATH)/android.config
+L_CFLAGS := -DANDROID -DANDROID_LOG_TAG=\"BlackSiren\"
+
 include $(CLEAR_VARS)
 LOCAL_MODULE := r2ssp
-LOCAL_SRC_FILES := ../prebuilt/support/libs/android/armv7eabi/libr2ssp.so 
+LOCAL_SRC_FILES := ../prebuilt/support/libs/android/$(TARGET_ARCH_ABI)/libr2ssp.so 
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := ztvad
-LOCAL_SRC_FILES := ../prebuilt/support/libs/android/armv7eabi/libztvad.so 
+LOCAL_SRC_FILES := ../prebuilt/support/libs/android/$(TARGET_ARCH_ABI)/libztvad.so 
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := r2vt
-LOCAL_SRC_FILES := ../prebuilt/support/libs/android/armv7eabi/legacy/libr2vt.so
+LOCAL_SRC_FILES := ../prebuilt/support/libs/android/$(TARGET_ARCH_ABI)/legacy/libr2vt.so
 include $(PREBUILT_SHARED_LIBRARY)
 
+ifdef CONFIG_BF_MVDR
 include $(CLEAR_VARS)
 LOCAL_MODULE := r2mvdrbf
-LOCAL_SRC_FILES := ../prebuilt/support/libs/android/armv7eabi/libr2mvdrbf.so
+LOCAL_SRC_FILES := ../prebuilt/support/libs/android/$(TARGET_ARCH_ABI)/libr2mvdrbf.so
 include $(PREBUILT_SHARED_LIBRARY)
+endif
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := opus
-LOCAL_SRC_FILES := ../prebuilt/support/libs/android/armv7eabi/libopus.a
+LOCAL_SRC_FILES := ../prebuilt/support/libs/android/$(TARGET_ARCH_ABI)/libopus.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := jsonc_static
 LOCAL_SRC_FILES := ../../libjsonc/obj/local/$(TARGET_ARCH_ABI)/libjsonc_static.a
 include $(PREBUILT_STATIC_LIBRARY)
-
-include $(LOCAL_PATH)/android.config
-L_CFLAGS := -DANDROID -DANDROID_LOG_TAG=\"BlackSiren\"
 
 ifdef CONFIG_ANDROID_LOG
 $(info CONFIG_ANDROID_LOG)

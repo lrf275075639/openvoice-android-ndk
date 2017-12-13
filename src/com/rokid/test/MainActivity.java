@@ -2,15 +2,16 @@ package com.rokid.test;
 
 import java.util.ArrayList;
 
-import com.rokid.openvoice.R;
-import com.rokid.openvoice.VoiceManager;
-import com.rokid.openvoice.VoiceManager.VTWord;
-
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+
+import com.rokid.openvoice.R;
+import com.rokid.openvoice.VoiceManager;
+import com.rokid.openvoice.VoiceManager.VTWord;
 
 public class MainActivity extends Activity implements OnClickListener {
 	
@@ -35,6 +36,21 @@ public class MainActivity extends Activity implements OnClickListener {
 		findViewById(R.id.add_vt_word).setOnClickListener(this);
 		findViewById(R.id.remove_vt_word).setOnClickListener(this);
 		findViewById(R.id.get_vt_words).setOnClickListener(this);
+	}
+	/**
+	 * am start --activity-single-top -n com.rokid.openvoice/com.rokid.test.MainActivity --es word "大傻逼" --es pinyin "da4sha3bi1"
+	 */
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		if(intent != null){
+			String vt_word = intent.getStringExtra("word");
+			String vt_pinyin = intent.getStringExtra("pinyin");
+			Log.e(TAG, "--------------------------------  word : " + vt_word +", pinyin : " + vt_pinyin);
+			if(vt_pinyin != null && vt_word != null){
+				Log.e(TAG, "add vt word result : " + VoiceManager.addVTWord(new VTWord(1, vt_word, vt_pinyin)));
+			}
+		}
 	}
 
 	@Override

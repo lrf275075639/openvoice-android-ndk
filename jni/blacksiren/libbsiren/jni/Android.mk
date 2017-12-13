@@ -90,7 +90,6 @@ endif
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES:= $(call all-named-files-under,*.cpp, ../src) 
 LOCAL_C_INCLUDES += \
-		$(THIRD_INCLUDES) \
 		$(LOCAL_PATH)/../include \
 		$(LOCAL_PATH)/../prebuilt/support/include \
 		$(LOCAL_PATH)/../../libjsonc/include

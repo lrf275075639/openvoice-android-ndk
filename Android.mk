@@ -45,6 +45,9 @@ LOCAL_PREBUILT_LIBS := \
 		libztvad:$(SHARED_LIBRARIES_PATH)/libztvad.so \
 		librokid_speech_jni:libs/$(TARGET_CPU_ABI)/librokid_speech_jni.so \
 		librokid_opus_jni:libs/$(TARGET_CPU_ABI)/librokid_opus_jni.so
+ifndef ALTER_MIC_ARRAY
+LOCAL_PREBUILT_LIBS += libmic_array:$(SHARED_LIBRARIES_PATH)/libmic_array.so
+endif
 include $(BUILD_MULTI_PREBUILT)
 
 include $(CLEAR_VARS)

@@ -15,7 +15,7 @@ JNIEnv* _env;
 jobject jobj;
 jmethodID method_id;
 
-std::atomic_flag thread_flag;
+std::atomic_flag thread_flag = ATOMIC_FLAG_INIT;
 
 extern "C" {
     JNIEXPORT jboolean JNICALL

@@ -11,7 +11,6 @@ import android.view.View.OnClickListener;
 
 import com.rokid.openvoice.R;
 import com.rokid.openvoice.VoiceManager;
-import com.rokid.openvoice.VoiceManager.VTWord;
 
 public class MainActivity extends Activity implements OnClickListener {
 	
@@ -48,7 +47,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			String vt_pinyin = intent.getStringExtra("pinyin");
 			Log.e(TAG, "--------------------------------  word : " + vt_word +", pinyin : " + vt_pinyin);
 			if(vt_pinyin != null && vt_word != null){
-				Log.e(TAG, "add vt word result : " + VoiceManager.addVTWord(new VTWord(1, vt_word, vt_pinyin)));
+				Log.e(TAG, "add vt word result : " + VoiceManager.addVtWord(new VoiceManager.VtWord(1, vt_word, vt_pinyin)));
 			}
 		}
 	}
@@ -79,15 +78,15 @@ public class MainActivity extends Activity implements OnClickListener {
 			VoiceManager.updateStack(null);
 			break;
 		case R.id.add_vt_word:
-			Log.e(TAG, "add vt word result : " + VoiceManager.addVTWord(new VTWord(1, "大傻逼", "da4sha3bi1")));
-			Log.e(TAG, "add vt word result : " + VoiceManager.addVTWord(new VTWord(1, "小傻逼", "xiao3sha3bi1")));
+			Log.e(TAG, "add vt word result : " + VoiceManager.addVtWord(new VoiceManager.VtWord(1, "大傻逼", "da4sha3bi1")));
+			Log.e(TAG, "add vt word result : " + VoiceManager.addVtWord(new VoiceManager.VtWord(1, "小傻逼", "xiao3sha3bi1")));
 			break;
 		case R.id.remove_vt_word:
-			Log.e(TAG, "remove vt word result : " + VoiceManager.removeVTWord("大傻逼"));
+			Log.e(TAG, "remove vt word result : " + VoiceManager.removeVtWord("大傻逼"));
 			break;
 		case R.id.get_vt_words:
-			ArrayList<VTWord> vtWords = VoiceManager.getVTWords();
-			for (VTWord vtWord : vtWords) {
+			ArrayList<VoiceManager.VtWord> vtWords = VoiceManager.getVtWords();
+			for (VoiceManager.VtWord vtWord : vtWords) {
 				Log.e(TAG, vtWord.toString());
 			}
 			break;

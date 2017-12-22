@@ -34,11 +34,11 @@ extern "C" {
     JNIEXPORT void JNICALL
     Java_com_rokid_openvoice_VoiceManager_registCallback(JNIEnv *env, jclass, jobject obj);
     JNIEXPORT int JNICALL
-    Java_com_rokid_openvoice_VoiceManager_addVTWord(JNIEnv *env, jclass, jobject vt_word);
+    Java_com_rokid_openvoice_VoiceManager_addVtWord(JNIEnv *env, jclass, jobject vt_word);
     JNIEXPORT int JNICALL
-    Java_com_rokid_openvoice_VoiceManager_removeVTWord(JNIEnv *env, jclass, jstring vt_word);
+    Java_com_rokid_openvoice_VoiceManager_removeVtWord(JNIEnv *env, jclass, jstring vt_word);
     JNIEXPORT jobject JNICALL
-    Java_com_rokid_openvoice_VoiceManager_getVTWords(JNIEnv *env, jclass);
+    Java_com_rokid_openvoice_VoiceManager_getVtWords(JNIEnv *env, jclass);
 }
 
 class Handle{
@@ -284,7 +284,7 @@ Java_com_rokid_openvoice_VoiceManager_registCallback(JNIEnv *env, jclass, jobjec
 }
 
 JNIEXPORT int JNICALL
-Java_com_rokid_openvoice_VoiceManager_addVTWord(JNIEnv *env, jclass, jobject vt_word)
+Java_com_rokid_openvoice_VoiceManager_addVtWord(JNIEnv *env, jclass, jobject vt_word)
 {
     ALOGD("%s", __FUNCTION__);
     siren_vt_word _vt_word;
@@ -314,7 +314,7 @@ Java_com_rokid_openvoice_VoiceManager_addVTWord(JNIEnv *env, jclass, jobject vt_
 }
 
 JNIEXPORT int JNICALL
-Java_com_rokid_openvoice_VoiceManager_removeVTWord(JNIEnv *env, jclass, jstring vt_word)
+Java_com_rokid_openvoice_VoiceManager_removeVtWord(JNIEnv *env, jclass, jstring vt_word)
 {
     ALOGD("%s", __FUNCTION__);
     std::string _vt_word;
@@ -327,7 +327,7 @@ Java_com_rokid_openvoice_VoiceManager_removeVTWord(JNIEnv *env, jclass, jstring 
 }
 
 JNIEXPORT jobject JNICALL
-Java_com_rokid_openvoice_VoiceManager_getVTWords(JNIEnv *env, jclass)
+Java_com_rokid_openvoice_VoiceManager_getVtWords(JNIEnv *env, jclass)
 {
     ALOGD("%s", __FUNCTION__);
     vector<siren_vt_word> _vt_words_in;
@@ -338,7 +338,7 @@ Java_com_rokid_openvoice_VoiceManager_getVTWords(JNIEnv *env, jclass)
     jobject obj_ArrayList = env->NewObject(class_ArrayList,construct_array_list, "");
     jmethodID arrayList_add = env->GetMethodID(class_ArrayList, "add", "(Ljava/lang/Object;)Z");
     
-    jclass class_vt_word = env->FindClass("com/rokid/openvoice/VoiceManager$VTWord");
+    jclass class_vt_word = env->FindClass("com/rokid/openvoice/VoiceManager$VtWord");
     jmethodID construct_vt_word = env->GetMethodID(class_vt_word,"<init>", "()V");
     
     for(int i = 0; i < count; i++){
@@ -373,9 +373,9 @@ static JNINativeMethod method_table[] = {
     { "updateConfig", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", (void*)Java_com_rokid_openvoice_VoiceManager_updateConfig},
     { "registCallback", "(Lcom/rokid/openvoice/VoiceCallback;)V", (void*)Java_com_rokid_openvoice_VoiceManager_registCallback},
     
-    { "addVTWord", "(Lcom/rokid/openvoice/VoiceManager$VTWord;)I", (void*)Java_com_rokid_openvoice_VoiceManager_addVTWord},
-    { "removeVTWord", "(Ljava/lang/String;)I", (void*)Java_com_rokid_openvoice_VoiceManager_removeVTWord},
-    { "getVTWords", "()Ljava/util/ArrayList;", (void*)Java_com_rokid_openvoice_VoiceManager_getVTWords},
+    { "addVtWord", "(Lcom/rokid/openvoice/VoiceManager$VtWord;)I", (void*)Java_com_rokid_openvoice_VoiceManager_addVtWord},
+    { "removeVtWord", "(Ljava/lang/String;)I", (void*)Java_com_rokid_openvoice_VoiceManager_removeVtWord},
+    { "getVtWords", "()Ljava/util/ArrayList;", (void*)Java_com_rokid_openvoice_VoiceManager_getVtWords},
 };
 
 int register_com_rokid_openvoice_VoiceManager(JNIEnv* env)

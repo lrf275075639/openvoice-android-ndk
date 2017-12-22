@@ -1,7 +1,9 @@
 package com.rokid.openvoice;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -18,8 +20,10 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.rokid.openvoice.VoiceManager;
 import com.rokid.voicerec.BearKid;
 import com.rokid.voicerec.BearKidResult;
+import com.rokid.voicerec.CustomWord;
 
 public class VoiceService extends android.app.Service{
 
@@ -274,6 +278,48 @@ public class VoiceService extends android.app.Service{
 				lock.unlock();
 			}
 			return result;
+		}
+
+		@Override
+		public int addCustomWord(int type, String word, String pinyin) throws RemoteException {
+			int result = -1;
+			if(VoiceManager.isValidVtType(type) 
+					&&word != null && pinyin != null && word.length() > 0 && pinyin.length() > 0){
+				result =  VoiceManager.addVtWord(new VoiceManager.VtWord(type, word, pinyin));
+				if(result != VoiceManager.VT_WORD_OK){
+					result = -1;
+				}
+			}
+			return result;
+		}
+
+		@Override
+		public int removeCustomWord(String word) throws RemoteException {
+			int result = -1;
+			if(word != null && word.length() > 0){
+				result = VoiceManager.removeVtWord(word);
+				if(result != VoiceManager.VT_WORD_OK){
+					result = -1;
+				}
+			}
+			return result;
+		}
+
+		@Override
+		public List<CustomWord> queryCustomWord(int type) throws RemoteException {
+			List<CustomWord> vtWords = new ArrayList<CustomWord>();
+			
+			if(VoiceManager.isValidVtType(type) || type == -1){
+				ArrayList<VoiceManager.VtWord> result = VoiceManager.getVtWords();
+				if(result != null) {
+					for (VoiceManager.VtWord vtWord : result) {
+						if(type == -1 || type == vtWord.vt_type){
+							vtWords.add(new CustomWord(vtWord.vt_type, vtWord.vt_word, vtWord.vt_pinyin));
+						}
+					}
+				}
+			}
+			return vtWords;
 		}
 	};
 	

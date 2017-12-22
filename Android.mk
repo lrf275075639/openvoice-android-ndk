@@ -54,6 +54,7 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := \
 		$(call all-java-files-under, jar) \
 		src/com/rokid/voicerec/ActionToComponent.java \
+		src/com/rokid/voicerec/CustomWord.java \
 		src/com/rokid/voicerec/BearKidResult.java \
 		src/com/rokid/voicerec/BearKid.aidl
 LOCAL_JACK_ENABLED = disabled

@@ -8,11 +8,8 @@
         android:minSdkVersion="19"
         android:targetSdkVersion="19" />
 
-    <!-- 录音 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <!-- 读取SD卡 -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <!-- 网络权限 -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application

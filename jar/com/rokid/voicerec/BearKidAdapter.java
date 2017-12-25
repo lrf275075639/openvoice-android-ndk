@@ -17,6 +17,33 @@ public class BearKidAdapter implements Runnable, ServiceConnection {
 		return true;
 	}
 
+	public int addCustomWord(int type, String word, String pinyin) {
+		try {
+			return getProxy().addCustomWord(type, word, pinyin);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return -1;
+	}
+
+	public int removeCustomWord(String word) {
+		try {
+			return getProxy().removeCustomWord(word);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return -1;
+	}
+
+	public java.util.List<CustomWord> queryCustomWord(int type) {
+		try {
+			return getProxy().queryCustomWord(type);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new java.util.ArrayList<CustomWord>();
+	}
+
 	public void close() {
 		synchronized (this) {
 			working = false;
@@ -89,30 +116,30 @@ public class BearKidAdapter implements Runnable, ServiceConnection {
 		if (callback == null)
 			return;
 		switch (result.type) {
-			case BearKidResult.TYPE_LOCATION:
-				callback.onVoiceEvent(EVENT_LOCATION, 0, result.location);
-				break;
-			case BearKidResult.TYPE_VOICE_INFO:
-				callback.onVoiceEvent(EVENT_VOICE_INFO, 0, result.energy);
-				break;
-			case BearKidResult.TYPE_ACTIVATION:
-				callback.onVoiceEvent(EVENT_ACTIVATION, result.activation, 0.0);
-				break;
-			case BearKidResult.TYPE_DEACTIVE:
-				callback.onVoiceEvent(EVENT_DEACTIVE, 0, 0.0);
-				break;
-			case BearKidResult.TYPE_INTERMEDIATE:
-				callback.onIntermediateResult(result.asr);
-				break;
-			case BearKidResult.TYPE_ASR:
-				callback.onRecognizeResult(result.asr, null, null);
-				break;
-			case BearKidResult.TYPE_NLP:
-				callback.onRecognizeResult(null, result.nlp, result.action);
-				break;
-			case BearKidResult.TYPE_EXCEPTION:
-				callback.onException(result.extype);
-				break;
+		case BearKidResult.TYPE_LOCATION:
+			callback.onVoiceEvent(EVENT_LOCATION, 0, result.location);
+			break;
+		case BearKidResult.TYPE_VOICE_INFO:
+			callback.onVoiceEvent(EVENT_VOICE_INFO, 0, result.energy);
+			break;
+		case BearKidResult.TYPE_ACTIVATION:
+			callback.onVoiceEvent(EVENT_ACTIVATION, result.activation, 0.0);
+			break;
+		case BearKidResult.TYPE_DEACTIVE:
+			callback.onVoiceEvent(EVENT_DEACTIVE, 0, 0.0);
+			break;
+		case BearKidResult.TYPE_INTERMEDIATE:
+			callback.onIntermediateResult(result.asr);
+			break;
+		case BearKidResult.TYPE_ASR:
+			callback.onRecognizeResult(result.asr, null, null);
+			break;
+		case BearKidResult.TYPE_NLP:
+			callback.onRecognizeResult(null, result.nlp, result.action);
+			break;
+		case BearKidResult.TYPE_EXCEPTION:
+			callback.onException(result.extype);
+			break;
 		}
 	}
 

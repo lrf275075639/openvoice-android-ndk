@@ -276,15 +276,14 @@ void VoiceService::onResponse() {
         }
         if(!arbitration(activation)) {
             if(sr.type == SPEECH_RES_INTER || sr.type == SPEECH_RES_ASR_FINISH){
-                ALOGV("result : asr\t%s", sr.asr.c_str());
-                _callback->intermediate_result(sr.id, sr.type, sr.asr);
                 if(sr.type == SPEECH_RES_ASR_FINISH){
+                    asr = sr.asr;
                     if(session_id == sr.id || _voice_config->cloud_vad_enable()){
                         set_siren_state(SIREN_STATE_SLEEP);
                         asr_finished = true;
                     }
-                    asr = sr.asr;
                 }
+                _callback->intermediate_result(sr.id, sr.type, sr.asr);
             }else if(sr.type == SPEECH_RES_END) {
                 ALOGV("result : nlp\t%s", sr.nlp.c_str());
                 ALOGV("result : action\t%s", sr.action.c_str());
@@ -295,10 +294,10 @@ void VoiceService::onResponse() {
             }else if(sr.type == SPEECH_RES_ERROR && (sr.err != SPEECH_SUCCESS)) {
                 if(session_id == sr.id && _voice_config->cloud_vad_enable())
                     set_siren_state(SIREN_STATE_SLEEP);
-                _callback->speech_error(sr.id, sr.err);
                 asr_finished = false;
                 local_sleep = false;
                 activation.clear();
+                _callback->speech_error(sr.id, sr.err);
             }
         }
         if(sr.type >= SPEECH_RES_END) clear(sr.id);

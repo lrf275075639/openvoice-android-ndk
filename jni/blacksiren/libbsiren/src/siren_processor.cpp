@@ -24,11 +24,7 @@ void SirenProcessorImpl::getErrorInfo(float** data_mul, std::vector<int> &errorM
 }
 
 bool SirenProcessorImpl::fixErrorMic(std::vector<int> &errorMic) {
-    if (errorMic.empty()) {
-        return false;
-    }
-
-    int cur = 0;
+    int index = 0;
     for (int i = 0; i < micinfo.m_pMicInfo_bf->iMicNum; i++) {
         bool exit = false;
         for (int j = 0; j < (int)errorMic.size(); j++) {
@@ -37,19 +33,14 @@ bool SirenProcessorImpl::fixErrorMic(std::vector<int> &errorMic) {
                 break;
             }
         }
-
         if (!exit) {
-            if (i != cur) {
-                micinfo.m_pMicInfo_bf->pMicIdLst[cur] = micinfo.m_pMicInfo_bf->pMicIdLst[i];
-            }
-            cur++;
+            micinfo.m_pMicInfo_bf->pMicIdLst[index++] = micinfo.m_pMicInfo_bf->pMicIdLst[i];
         }
     }
-
-    if (cur == micinfo.m_pMicInfo_bf->iMicNum) {
+    if(index == micinfo.m_pMicInfo_bf->iMicNum){
         return false;
-    } else {
-        micinfo.m_pMicInfo_bf->iMicNum = cur;
+    }else {
+        micinfo.m_pMicInfo_bf->iMicNum = index;
         return true;
     }
 }
@@ -394,11 +385,10 @@ void SirenProcessorImpl::process(char *datain, int lenin, int aecflag, int awake
         state.firstFrm = false;
         std::vector<int> errorMics;
         getErrorInfo(data_mul, errorMics);
+        for (int i = 0; i < errorMics.size(); i++) {
+            siren_printf(SIREN_WARNING, "------------   Error MIC id :    %d", errorMics[i]);
+        }
         if (fixErrorMic(errorMics)) {
-            siren_printf(SIREN_WARNING, "detect mic error:");
-            for (int i = 0; i < micinfo.m_pMicInfo_bf->iMicNum; i++) {
-                siren_printf(SIREN_WARNING, "error mic %d", micinfo.m_pMicInfo_bf->pMicIdLst[i]);
-            }
             delete unit.m_pMem_vbv3;
             delete unit.m_pMmem_bf;
 

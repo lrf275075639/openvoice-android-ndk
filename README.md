@@ -52,17 +52,7 @@ List<CustomWord> queryCustomWord(int type);
 ```
 out/target/common/obj/JAVA_LIBRARIES/BearKidAdapter_intermediates/classes.jar
 ```
-
-如在 905d 开发板上，要开始使用自定义激活词，首先得先在您的设备上加载openvoice_process.apk，命令如下
-```
-adb root
-adb remount
-adb shell mkdir /system/priv-app/openvoice_process/
-adb push openvoice_process.apk /system/priv-app/openvoice_process/
-reboot
-```
-## 接口使用注意事项
-
+## 接口使用注意事项 
 1. 在您的 libs 添加 jar 包 BearKid Jar
 2. 需要 import 以下三个类
 
@@ -71,27 +61,6 @@ import com.rokid.voicerec.BearKidAdapter;
 import com.rokid.voicerec.BearKidCallback;
 import com.rokid.voicerec.CustomWord;
 ```
-
-## API
-
-```c
-int addCustomWord(int type, String word, String pinyin);
-// 添加自定义激活词接口
-// 参数type: 有3种 TYPE_VT_WORD (唤醒激活词), TYPE_EXIT_WORD (推出激活词), TYPE_HOT_WORD (热词激活词）
-// 参数word: 激活词中文文字   如:小月亮
-// 参数pinyin: 激活词拼音+声调 如:xiao3yue4liang4
-
-int removeCustomWord(String word);
-// 删除自定义激活词接口,参数 word: 激活词中文文字
-
-List<CustomWord> queryCustomWord(int type);
-// 查询自定义激活词接口，参数type：同上
-```
-
-# ASR 使用方法
-
-
-## API
 
 ## API
 ```c

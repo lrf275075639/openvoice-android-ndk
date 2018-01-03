@@ -3,7 +3,7 @@ LOCAL_PATH:= $(call my-dir)
 SDK_VERSION = $(shell if [ $(PLATFORM_SDK_VERSION) -ge 21 ]; then echo 23; else echo 19; fi)
 SHARED_LIBRARIES_PATH := libs/$(SDK_VERSION)/$(TARGET_CPU_ABI)
 ifndef ROKID_BLACKSIREN_CONFIG
-ROKID_BLACKSIREN_CONFIG := rokid_ai_dev 
+ROKID_BLACKSIREN_CONFIG := rokid_dev_board
 endif
 
 $(shell mkdir -p $(TARGET_OUT_ETC))
@@ -60,4 +60,5 @@ LOCAL_SRC_FILES := \
 LOCAL_JACK_ENABLED = disabled
 LOCAL_MODULE := BearKidAdapter
 include $(BUILD_STATIC_JAVA_LIBRARY)
+
 include $(LOCAL_PATH)/demo/Android.mk

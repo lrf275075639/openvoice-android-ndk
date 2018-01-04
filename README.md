@@ -79,6 +79,7 @@ void onRecognizeResult(String asr, String nlp, String action);
 
 void onException(int exception);
 // 'exception' 异常类型
+```
 
 ## 示例
 
@@ -133,6 +134,7 @@ public class MainActivity extends Activity implements BearKidCallback {
 
 ```
 ## 注意事项
-1、配网方法请参照 (android开发板烧写流程的配网环节)[https://developer-forum.rokid.com/t/topic/991]
-2、修改/system/etc/openvoice_proc.json 对应字段（配置openvoice 对应 key ID)[https://developer-forum.rokid.com/t/topic/991]
+1. 配网方法请参照 (android开发板烧写流程的配网环节)[https://developer-forum.rokid.com/t/topic/991]
+
+2. 修改/system/etc/openvoice_proc.json 对应字段（配置openvoice 对应 key ID)[https://developer-forum.rokid.com/t/topic/991]
 

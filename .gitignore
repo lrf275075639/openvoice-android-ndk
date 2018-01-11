@@ -1,0 +1,13 @@
+.metadata/
+.DS_Store
+.settings
+.classpath
+.project
+proguard-project.txt
+project.properties
+bin
+gen
+obj
+values-
+**/jni/blacksiren/libbsiren/libs/
+**/jni/blacksiren/test/
